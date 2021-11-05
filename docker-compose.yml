@@ -1,12 +1,12 @@
 version: '3.8'
 services:
-  db:
+  egov_db:
     image: mysql
     ports:
     - '3306'
     restart: always
     environment:
-        MYSQL_DATABASE: admin
+        MYSQL_DATABASE: egov_db
         MYSQL_USER: root
         MYSQL_PASSWORD: root
         MYSQL_ROOT_PASSWORD: root
@@ -16,13 +16,10 @@ services:
 
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    #command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
     ports:
       - "8000:8000"
     depends_on:
-      - db
-    links:
-      - db:egov_db
-
+      - egov_db

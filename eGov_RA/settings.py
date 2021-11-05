@@ -80,8 +80,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'egov_db',
         'USER': 'root',
-        'PASSWORD': '',
-        'HOST':'localhost',
+        'PASSWORD': 'root',
+        'HOST':'egovra-v2-master_egov_db_1',
         'PORT':'3306',
 
     }
