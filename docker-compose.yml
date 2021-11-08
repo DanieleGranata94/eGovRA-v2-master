@@ -7,16 +7,19 @@ services:
     restart: always
     environment:
         MYSQL_DATABASE: egov_db
-        MYSQL_USER: root
-        MYSQL_PASSWORD: root
+        MYSQL_USER: user
+        MYSQL_PASSWORD: user
         MYSQL_ROOT_PASSWORD: root
 
     volumes:
-    - .dbdata:/var/lib/mysql
+    - ./egov_db.sql:/docker-entrypoint-initdb.d/schema.sql
 
   web:
     build: .
+    #command: bash -c "sleep 15; entrypoint.sh"
     #command: python manage.py runserver 0.0.0.0:8000
+    entrypoint: ./entrypoint.sh egov_db 3306
+    restart: always
     volumes:
       - .:/app
     ports:
