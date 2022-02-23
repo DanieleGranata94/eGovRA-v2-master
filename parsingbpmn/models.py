@@ -49,10 +49,10 @@ class Asset_type(models.Model):
 
 class Asset(models.Model):
     name = models.CharField(max_length=100)
-    bpmn_id= models.CharField(max_length=100,null=True)
+    bpmn_id= models.CharField(max_length=99,null=True)
     process = models.ForeignKey(Process, on_delete=models.CASCADE)
     asset_type = models.ForeignKey(Asset_type,on_delete=models.CASCADE,null=True)
-    position=models.CharField(max_length=100,null=True)
+    position=models.CharField(max_length=99,null=True)
 
     class Meta:
         verbose_name="Asset"
@@ -163,6 +163,19 @@ class ThreatAgentRiskScores(models.Model):
 class System_ThreatAgent(models.Model):
     system = models.ForeignKey(System, on_delete=models.CASCADE)
     category = models.ForeignKey(ThreatAgentCategory, on_delete=models.CASCADE, null=True)
+
+class Stride(models.Model):
+    category = models.CharField(max_length=100)
+
+class StrideImpactRecord(models.Model):
+    app = models.ForeignKey(System, on_delete=models.CASCADE,null=True)
+    stride = models.ForeignKey(Stride, on_delete=models.CASCADE,null=True)
+    financialdamage = models.IntegerField(null=True)
+    reputationdamage = models.IntegerField(null=True)
+    noncompliance = models.IntegerField(null=True)
+    privacyviolation = models.IntegerField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
 class Risk(models.Model):
     system = models.ForeignKey(System, on_delete=models.CASCADE)

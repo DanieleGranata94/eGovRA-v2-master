@@ -18,6 +18,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
+from parsingbpmn import views
 from parsingbpmn.views import bpmn_process_management, system_management, \
     delete_process, delete_system, process_enrichment, threat_modeling, process_view_task_type, process_view_attribute, \
     task_type_enrichment, export_threat_modeling, threats_and_controls, bpmn_viewer, edit_process
@@ -37,6 +38,10 @@ urlpatterns = [
     path('threats_and_controls/<int:pk>', threats_and_controls, name='threats_and_controls'),
     path('threat_modeling/<int:pk>', threat_modeling, name='threat_modeling'),
     path('export_threat_modeling/<int:pk>', export_threat_modeling, name='export_threat_modeling'),
+    path('threat_agent_wizard/<int:appId>', views.threat_agent_wizard, name='threat_agent_wizard'),
+    path('threat_agent_generation/<int:appId>', views.threat_agent_generation, name='threat_agent_generation'),
+    path('risk_analysis/<int:appId>', views.risk_analysis, name='risk_analysis'),
+
 ]
 
 if settings.DEBUG:

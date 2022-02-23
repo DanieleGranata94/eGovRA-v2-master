@@ -5,12 +5,14 @@ from django.core.files.storage import FileSystemStorage
 from django.core.serializers import python
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
 from openpyxl import Workbook
 from openpyxl.styles import Font, Border, Side
 
 from .forms import ProcessForm, SystemForm
 from .models import Process, Asset, System, Asset_has_attribute, Attribute, Asset_type, Attribute_value, \
-    Threat_has_attribute, Threat_has_control
+    Threat_has_attribute, Threat_has_control, ThreatAgentRiskScores, TACategoryAttribute, ThreatAgentCategory, \
+    System_ThreatAgent, TAReplies_Question, TAReplyCategory, Reply, ThreatAgentQuestion
 from .bpmn_python_master.bpmn_python import bpmn_diagram_rep as diagram
 
 # Create your views here.
@@ -651,3 +653,328 @@ def bpmn_viewer(request,pk):
     return render(request,'bpmn_viewer.html',{
         'process':process
     })
+
+
+def risk_analysis(request, appId):
+    app = System.objects.get(appId=appId)
+    appName=app.application
+    SelectedComponentName=''
+    componentsWithThreats=[]
+    components=Asset.objects.filter(app=app)
+
+    try:
+        if request.POST['dropdown']:
+            SelectedComponentName=request.POST['dropdown']
+        else:
+            SelectedComponentName=components[0].name
+    except:
+        print()
+    componentUnderAnalysis=components[0]
+    for component in components:
+        if (len(threat_modeling_per_assetFun(component.id)) != 0):
+            if(SelectedComponentName==component.name):
+                componentsWithThreats.append((component,True))
+                componentUnderAnalysis=component
+            else:
+                componentsWithThreats.append((component,False))
+
+    threats = threat_modeling_per_assetFun(componentUnderAnalysis.id)
+
+    TAscores=ThreatAgentRiskScores.objects.filter(app=app)
+
+    #ricerca ultimo risultato.
+    maxtimeTA = TAscores[0].updated_at
+    lastScore=TAscores[0]
+    for Tascore in TAscores:
+        if(Tascore.updated_at>maxtimeTA):
+            lastScore=Tascore
+
+    SIRecords = StrideImpactRecord.objects.filter(app=app)
+
+    PreCondition="[n,n,n]"
+    PostCondition="[n,n,n]"
+    LossOfConfidentiality=0
+    LossOfIntegrity=0
+    LossOfAvailability=0
+    LossOfCPostConditionValue = 0
+    LossOfIPostConditionValue = 0
+    LossOfAPostConditionValue = 0
+    LossOfCPreConditionValue = 0
+    LossOfIPreConditionValue = 0
+    LossOfAPreConditionValue = 0
+
+    for threat in threats:
+        PreCondition=str(threat[0].PreCondition)
+        PostCondition=str(threat[0].PostCondition)
+        maxFinancial = 0
+        maxReputation = 0
+        maxnoncompliance = 0
+        maxprivacy = 0
+        for SIRecord in SIRecords:
+            for Threatstride in threat[1]:
+                if(SIRecord.stride.category.lower()==Threatstride.lower()):
+                    if(maxFinancial < SIRecord.financialdamage):
+                        maxFinancial=SIRecord.financialdamage
+                    if (maxReputation < SIRecord.reputationdamage):
+                        maxReputation = SIRecord.reputationdamage
+                    if (maxnoncompliance < SIRecord.noncompliance):
+                        maxnoncompliance = SIRecord.noncompliance
+                    if (maxprivacy < SIRecord.privacyviolation):
+                        maxprivacy = SIRecord.privacyviolation
+        threat[0].financial=maxFinancial
+        threat[0].reputation=maxReputation
+        threat[0].noncompliance=maxnoncompliance
+        threat[0].privacy=maxprivacy
+
+        #elimino [ e ]
+
+        try:
+            PreCondition.replace("[","")
+            PreCondition.replace("]","")
+            PostCondition.replace("[","")
+            PostCondition.replace("]","")
+
+            #splitto con le ,
+            PreCondition=PreCondition.split(",")
+            PostCondition=PostCondition.split(",")
+
+            if(PreCondition[0]=='n'):
+                LossOfCPreConditionValue=0
+            if (PreCondition[0] == 'p'):
+                LossOfCPreConditionValue = 1
+            if(PreCondition[0]=='f'):
+                LossOfCPreConditionValue=2
+
+            if(PostCondition[0]=='n'):
+                LossOfCPostConditionValue=0
+            if (PostCondition[0] == 'p'):
+                LossOfCPostConditionValue = 1
+            if(PostCondition[0]=='f'):
+                LossOfCPostConditionValue=2
+
+            LossOfConfidentiality=((LossOfCPostConditionValue+LossOfCPreConditionValue)*3)+1
+
+            if (PreCondition[1] == 'n'):
+                LossOfIPreConditionValue = 0
+            if (PreCondition[1] == 'p'):
+                LossOfIPreConditionValue = 1
+            if (PreCondition[1] == 'f'):
+                LossOfIPreConditionValue = 2
+
+            if (PostCondition[1] == 'n'):
+                LossOfIPostConditionValue = 0
+            if (PostCondition[1] == 'p'):
+                LossOfIPostConditionValue = 1
+            if (PostCondition[1] == 'f'):
+                LossOfIPostConditionValue = 2
+
+            LossOfIntegrity = ((LossOfIPostConditionValue + LossOfIPreConditionValue) * 3) + 1
+
+            if (PreCondition[2] == 'n'):
+                LossOfAPreConditionValue = 0
+            if (PreCondition[2] == 'p'):
+                LossOfAPreConditionValue = 1
+            if (PreCondition[2] == 'f'):
+                LossOfAPreConditionValue = 2
+            if (PostCondition[2] == 'n'):
+                LossOfAPostConditionValue = 0
+            if (PostCondition[2] == 'p'):
+                LossOfAPostConditionValue = 1
+            if (PostCondition[2] == 'f'):
+                LossOfAPostConditionValue = 2
+
+            LossOfAvailability = ((LossOfAPostConditionValue + LossOfAPreConditionValue) * 3) + 1
+
+            threat[0].lossofc=LossOfConfidentiality
+            threat[0].lossofi=LossOfIntegrity
+            threat[0].lossofa=LossOfAvailability
+
+        except:
+            print("iNFO MISSING")
+
+    return render(request, 'risk_analysis.html', {"appName": appName,"ComponentName":SelectedComponentName,"threats":threats,
+                                                  "components":componentsWithThreats,"ThreatAgentScores":lastScore,"appId": appId})
+
+@csrf_exempt
+def threat_agent_wizard(request,appId):
+    context={}
+    #Generate question and related replies
+    questions=ThreatAgentQuestion.objects.all()
+    questions_replies=TAReplies_Question.objects.all()
+    questions_replies_list=[]
+    for question in questions:
+        replies = []
+        question_replies_dict = {}
+        for reply in questions_replies:
+            if question==reply.question:
+                replies.append(reply.reply.reply)
+        question_replies_dict['question']=question.question
+        question_replies_dict['replies']=replies
+        questions_replies_list.append(question_replies_dict)
+    context['questions_replies']=questions_replies_list
+    context['appId']=appId
+    return render(request, 'threat_agent_wizard.html', context)
+
+@csrf_exempt
+def threat_agent_generation(request, appId):
+    print(appId)
+    context={}
+    ThreatAgents = []
+    ThreatAgentsPerAsset = []
+    #for category in ThreatAgentCategory.objects.all():   #inizializzo la lista finale a tutti i TA
+        #ThreatAgents.append(category)
+    for reply in request.POST: #per ogni risposta al questionario
+        if(reply!='csrfmiddlewaretoken'):
+            ReplyObject=Reply.objects.filter(reply=reply).get()
+            tareplycategories=TAReplyCategory.objects.filter(reply=ReplyObject)
+            TAList=[]
+            for replycategory in tareplycategories.all(): #ogni categoria relativa ad una singola risposta
+                #print(replycategory.reply.reply + " "+ replycategory.category.category)
+                TAList.append(replycategory.category)
+                question = TAReplies_Question.objects.filter(reply=ReplyObject)
+            ThreatAgentsPerAsset.append((TAList,question))
+
+
+    numQ3=0
+    numQ4=0
+    #conto il numero di risposte date per Q3 e Q4
+    for ThreatAgentsList,question in ThreatAgentsPerAsset: #per ogni risposta
+        questionId=question.get().question.Qid
+        if(questionId=="Q3"):
+            numQ3+=1
+        if(questionId=="Q4"):
+            numQ4+=1
+
+    i=0
+    j=0
+    ThreatAgentsListTemp=[]
+    print(ThreatAgentsPerAsset)
+    for ThreatAgentsList,question in ThreatAgentsPerAsset: #per ogni risposta
+        questionId=question.get().question.Qid
+        if(questionId==1):
+            ThreatAgents=ThreatAgentsList
+        if(questionId==2):
+            ThreatAgents=intersection(ThreatAgents,ThreatAgentsList)
+        if(questionId==3):
+            if(i==0):
+                ThreatAgentsListTemp = ThreatAgentsList
+            elif(i<numQ3):
+                ThreatAgentsList=union(ThreatAgentsList,ThreatAgentsListTemp)
+                ThreatAgentsListTemp=ThreatAgentsList
+            if(i==numQ3-1):
+                ThreatAgents = intersection(ThreatAgents, ThreatAgentsList)
+            i = i + 1
+
+        if(questionId==4):
+            if(j==0):
+                ThreatAgentsListTemp=ThreatAgentsList
+                j=j+1
+            elif(j==1):
+                ThreatAgentsListTemp = ThreatAgentsList
+                j=j+1
+            elif(j<numQ4):
+                ThreatAgentsList=union(ThreatAgentsList,ThreatAgentsListTemp)
+                ThreatAgentsListTemp=ThreatAgentsList
+
+    ThreatAgents = intersection(ThreatAgents, ThreatAgentsList)
+    print(ThreatAgentsList)
+    print(ThreatAgents)
+    print(ThreatAgents)
+    ThreatAgentsWithInfo={}
+    for ta in ThreatAgents:
+        ThreatAgentsWithInfo[ta]=list(TACategoryAttribute.objects.filter(category=ta))
+        System_ThreatAgent.objects.get_or_create(
+            app = System.objects.get(appId=appId),
+            category=ta
+        )
+
+
+    context={'ThreatAgents':ThreatAgentsWithInfo}
+    context['appId']=appId
+    return render(request, 'threat_agent_generation.html',context=context)
+
+def intersection(lst1, lst2):
+    lst3 = [value for value in lst1 if value in lst2]
+    return lst3
+
+def union(lst1, lst2):
+    lst3 = list(set(lst1+lst2))
+    return lst3
+
+@csrf_exempt
+def calculate_threat_agent_risks(request,appId):
+    OWASP_Motive_TOT = 0
+    OWASP_Size_TOT = 0
+    OWASP_Opportunity_TOT = 0
+    OWASP_Skill_TOT = 0
+    sommapesi = 0
+
+    for category,risk_value in request.POST.items():
+        TACategory=ThreatAgentCategory.objects.get(category=category)
+        #per ogni categoria ottieni i Attribute relativi e calcola i 4 parametri owasp con le formule nella tesi.
+        TACategoryAttributes=TACategoryAttribute.objects.filter(category=TACategory)
+        OWASP_Motive=0
+        OWASP_Size=0
+        OWASP_Opportunity=0
+        OWASP_Skill=0
+        limits=0
+        intent=0
+        access=0
+        resources=0
+        visibility=0
+        skills=0
+
+        OWASP_Motives=[]
+
+        #scorro gli attributi di category
+        for TACategoryAttributeVar in TACategoryAttributes:
+            if(TACategoryAttributeVar.attribute.attribute=='Skills'):
+                skills=TACategoryAttributeVar.attribute.score
+            if(TACategoryAttributeVar.attribute.attribute=='Resources'):
+                resources=TACategoryAttributeVar.attribute.score
+            if (TACategoryAttributeVar.attribute.attribute == 'Visibility'):
+                visibility= TACategoryAttributeVar.attribute.score
+            if (TACategoryAttributeVar.attribute.attribute == 'Limits'):
+                limits= TACategoryAttributeVar.attribute.score
+            if (TACategoryAttributeVar.attribute.attribute == 'Intent'):
+                intent= TACategoryAttributeVar.attribute.score
+            if (TACategoryAttributeVar.attribute.attribute == 'Access'):
+                access= TACategoryAttributeVar.attribute.score
+
+        if(risk_value=='L'):
+            risk_valueNum= 1
+        if (risk_value == 'M'):
+            risk_valueNum = 2
+        if (risk_value == 'H'):
+            risk_valueNum = 3
+
+
+
+        sommapesi=sommapesi+risk_valueNum
+        OWASP_Motive= ((((intent/2)+(limits/4))/2) * 10)
+        OWASP_Opportunity= ((((access/2)+(resources/6)+(visibility/4))/3) * 10)
+        OWASP_Size= (resources/6) * 10
+        OWASP_Skill= (skills/4) * 10
+
+        OWASP_Motive_TOT += (OWASP_Motive * risk_valueNum)
+        OWASP_Opportunity_TOT += OWASP_Opportunity * risk_valueNum
+        OWASP_Size_TOT += OWASP_Size * risk_valueNum
+        OWASP_Skill_TOT += OWASP_Skill * risk_valueNum
+
+    OWASP_Skill_TOT= int(round(OWASP_Skill_TOT/sommapesi))
+    OWASP_Motive_TOT= int(round(OWASP_Motive_TOT/sommapesi))
+    OWASP_Size_TOT= int(round(OWASP_Size_TOT/sommapesi))
+    OWASP_Opportunity_TOT= int(round(OWASP_Opportunity_TOT/sommapesi))
+
+    app=System.objects.get(appId=appId)
+
+    ScoreAlreadyCreated=ThreatAgentRiskScores.objects.filter(app=app)
+    if(not ThreatAgentRiskScores.objects.filter(app=app).exists()):
+        obj=ThreatAgentRiskScores.objects.get_or_create(
+        app=app,
+        skill=OWASP_Skill_TOT,
+        size = OWASP_Size_TOT,
+        motive = OWASP_Motive_TOT,
+        opportunity = OWASP_Opportunity_TOT)
+
+    return render(request, 'stride_impact_evaluation.html', {"appId": appId})

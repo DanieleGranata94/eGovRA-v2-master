@@ -24,6 +24,7 @@
                 <th>Name</th>
                 <th>Select system</th>
                 <th>Delete system</th>
+                <th>Threat Agent Wizard</th>
             </tr>
         </thead>
         <tbody>
@@ -40,6 +41,19 @@
                         <form method="POST" action="{% url 'delete_system' system.pk %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-danger btn-sm">Delete system</button>
+                        </form>
+                    </td>
+
+                    <td>
+                        <form method="POST" action="{% url 'threat_agent_wizard' system.pk %}">
+                            {% csrf_token %}
+
+                             {% if system.1 == True %}
+                                 <button type="submit" class="btn btn-primary btn-sm">Begin Threat Agent Wizard</button>
+                            {% else %}
+                                 <button type="submit" class="btn btn-primary btn-sm">Edit Threat Agent Wizard</button>
+                            {% endif %}
+
                         </form>
                     </td>
                 </tr>
