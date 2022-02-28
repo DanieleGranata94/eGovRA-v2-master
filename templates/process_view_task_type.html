@@ -20,7 +20,7 @@
                     {{ task.name }}
                 </td>
                 <td style="font-family: 'Times New Roman';font-size: larger">
-                    <form method="POST" action="{% url 'task_type_enrichment' task.process.pk %}">
+                    <form method="POST" action="{% url 'task_type_enrichment' systemId=systemId processId=task.process.pk %}">
                         {% csrf_token %}
                         {% if task.asset_type != None %}
                             {{ task.asset_type }}

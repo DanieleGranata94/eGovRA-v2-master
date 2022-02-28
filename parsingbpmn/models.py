@@ -74,6 +74,10 @@ class Attribute_value(models.Model):
 class Threat(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=500)
+    owasp_ease_of_discovery = models.IntegerField(null=True)
+    owasp_ease_of_exploit = models.IntegerField(null=True)
+    owasp_intrusion_detection = models.IntegerField(null=True)
+    owasp_awareness = models.IntegerField(null=True)
 
     class Meta:
         verbose_name="Threat"

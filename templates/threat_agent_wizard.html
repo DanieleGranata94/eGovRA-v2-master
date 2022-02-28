@@ -59,7 +59,7 @@
 
         <div class="panel panel-default">
             <div class="panel-body">
-        <form method="POST" action="{% url 'threat_agent_generation' appId=appId %}">
+        <form method="POST" action="{% url 'threat_agent_generation' systemId=systemId processId=processId assetId=assetId %}">
 {% csrf_token %}
                 <table border="1" style="width: 99%; ">
 

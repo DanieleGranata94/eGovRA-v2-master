@@ -4,36 +4,7 @@
 
 
 
-<style>
 
-    a.tip {
-        text-decoration: none
-    }
-
-    a.tip:hover {
-        cursor: help;
-        position: relative
-    }
-
-    a.tip span {
-        display: none
-    }
-
-    a.tip:hover span {
-        border: #c0c0c0 1px dotted;
-        padding: 5px 20px 5px 5px;
-        display: block;
-        z-index: 100;
-        background: #f0f0f0 no-repeat 100% 5%;
-        left: 0px;
-        margin: 10px;
-        width: 250px;
-        position: absolute;
-        top: 10px;
-        text-decoration: none
-    }
-
-</style>
 
 <style>
     table {
@@ -51,19 +22,15 @@
 </style>
 
 <div class=container>
-    <form method="POST" action="{% url 'risk_analysis' appId=appId  %}">
+    <form method="POST" action="{% url 'calculate_threat_agent_risks' systemId=systemId processId=processId assetId=assetId %}">
     {% csrf_token %}
-    <div class="panel panel-default">
-        <br>
-        <br>
 
+    <div class="container">
+    <div class="panel panel-primary">
         <div class="panel-heading text-center">
-            <span class="lead">
-            <h2>Categories Result</h2>
-                </span>
-        </div>
-
-        <table border="1" style="width: 100%;" ng-show="show_table">
+            <h4 class="panel-title pull-left" style="padding-top: 7.5px;">Categories result</h4>
+             <div class="pull-right">
+                    <table border="2" style="width: 100%;">
              {% for Category,attributes in ThreatAgents.items %}
 
             <tr style="border-bottom: 1px solid #ddd" >
@@ -93,11 +60,11 @@
                 </td>
 
                 <td width="25%" >
-                    How does you rate the category?
+                    How do you rate the category?
                     <br>
                     <br>
                     <div class="btn-group btn-toggle">
-                        <select class="form-select" aria-label="How does you rate the category?" name="{{Category.category}}">
+                        <select cclass="select is-multiple" aria-label="How do you rate the category?" name="{{ Category.category }}">
                           <option value="L">Low</option>
                           <option value="M" selected>Medium</option>
                           <option value="H">High</option>
@@ -108,10 +75,18 @@
             </tr>
             {%endfor%}
         </table>
+             </div>
+        </div>
+        <div class="panel-body">
+            Panel content
+        </div>
     </div>
+</div>
+
+
 
     <div style="text-align: center;">
-        <button>Submit Evaluation</button>
+        <button style="text-align: center;" class="btn btn-primary">Submit Evaluation</button>
     </div>
 
         </form>

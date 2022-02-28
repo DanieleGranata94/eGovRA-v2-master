@@ -21,26 +21,29 @@ from django.conf.urls.static import static
 from parsingbpmn import views
 from parsingbpmn.views import bpmn_process_management, system_management, \
     delete_process, delete_system, process_enrichment, threat_modeling, process_view_task_type, process_view_attribute, \
-    task_type_enrichment, export_threat_modeling, threats_and_controls, bpmn_viewer, edit_process
+    task_type_enrichment, export_threat_modeling, threats_and_controls, bpmn_viewer, edit_process, \
+    from_ta_to_system_management, threat_modeling_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', system_management, name='system_management'),
-    path('bpmn_process_management/<int:pk>', bpmn_process_management, name='bpmn_process_management'),
-    path('process_view_task_type/<int:pk>', process_view_task_type, name='process_view_task_type'),
-    path('process_view_attribute/<int:pk>', process_view_attribute, name='process_view_attribute'),
-    path('edit_process/<int:pk>', edit_process, name='edit_process'),
+    path('bpmn_process_management/<int:systemId>', bpmn_process_management, name='bpmn_process_management'),
+    path('process_view_task_type/<int:systemId>/<int:processId>', process_view_task_type, name='process_view_task_type'),
+    path('process_view_attribute/<int:systemId>/<int:processId>', process_view_attribute, name='process_view_attribute'),
+    path('edit_process/<int:systemId>/<int:processId>', edit_process, name='edit_process'),
     path('delete_process/<int:pk>', delete_process, name='delete_process'),
     path('delete_system/<int:pk>', delete_system, name='delete_system'),
-    path('process_enrichment/<int:pk>', process_enrichment, name='process_enrichment'),
+    path('process_enrichment/<int:systemId>/<int:processId>', process_enrichment, name='process_enrichment'),
     path('bpmn_viewer/<int:pk>', bpmn_viewer, name='bpmn_viewer'),
-    path('task_type_enrichment/<int:pk>', task_type_enrichment, name='task_type_enrichment'),
-    path('threats_and_controls/<int:pk>', threats_and_controls, name='threats_and_controls'),
-    path('threat_modeling/<int:pk>', threat_modeling, name='threat_modeling'),
-    path('export_threat_modeling/<int:pk>', export_threat_modeling, name='export_threat_modeling'),
-    path('threat_agent_wizard/<int:appId>', views.threat_agent_wizard, name='threat_agent_wizard'),
-    path('threat_agent_generation/<int:appId>', views.threat_agent_generation, name='threat_agent_generation'),
-    path('risk_analysis/<int:appId>', views.risk_analysis, name='risk_analysis'),
+    path('task_type_enrichment/<int:systemId>/<int:processId>', task_type_enrichment, name='task_type_enrichment'),
+    path('threats_and_controls/<int:systemId>/<int:processId>', threats_and_controls, name='threats_and_controls'),
+    path('threat_modeling_view/<int:systemId>/<int:processId>', threat_modeling_view, name='threat_modeling_view'),
+    path('export_threat_modeling/<int:systemId>/<int:processId>', export_threat_modeling, name='export_threat_modeling'),
+    path('threat_agent_wizard/<int:systemId>/<int:processId>/<int:assetId>', views.threat_agent_wizard, name='threat_agent_wizard'),
+    path('threat_agent_generation/<int:systemId>/<int:processId>/<int:assetId>', views.threat_agent_generation, name='threat_agent_generation'),
+    path('calculate_threat_agent_risks/<int:systemId>/<int:processId>/<int:assetId>', views.calculate_threat_agent_risks, name='calculate_threat_agent_risks'),
+    path('stride_impact_evaluation/<int:systemId>/<int:processId>/<int:assetId>', views.stride_impact_evaluation, name='stride_impact_evaluation'),
+    path('risk_analysis/<int:systemId>/<int:processId>/<int:assetId>', views.risk_analysis, name='risk_analysis'),
 
 ]
 

@@ -11,15 +11,18 @@
     </style>
 
     <div class="starter-template" style="margin-top: -6%;"> </div>
-        <h1>Threat model</h1>
+        <h1>Risk Analysis</h1>
         <p style="font-family: 'Times New Roman';font-size: medium">
             Below is a detailed report on the possible threats that can occur for each asset.
+        </p>
+        <p style="font-family: 'Times New Roman';font-size: medium">
+            You should select each asset in order to evaluate the risk associated to.
         </p>
         <p style="font-family: 'Times New Roman';font-size: medium;">
             <b style="font-family: 'Times New Roman';font-size: large;">
                 N.B.:
             </b>
-            Click on the threat to evaluate the countermeasures associated with it.
+            You can click on the threat to evaluate the countermeasures associated with it.
         </p>
         <table class="table">
             <thead>
@@ -29,6 +32,7 @@
                 <th style="text-align: center">Asset attributes</th>
                 <th style="text-align: center">Threats</th>
                 <th style="text-align: center">Policy per asset</th>
+                <th style="text-align: center">Risk Rating</th>
 
             </tr>
             </thead>
@@ -105,15 +109,30 @@
                             {% endfor %}
                         </ul>
                     </td>
+
+                <td >
+
+                    <form method="POST" action="{% url 'threat_agent_wizard' systemId=systemId processId=processId assetId=info.0.id  %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">Select the Asset</button>
+                    </form>
+                </td>
+
+
+
                 </tr>
             {% endfor %}
             </tbody>
         </table>
 
-        <form method="POST" action="{% url 'export_threat_modeling' pk %}">
+        <form method="POST" action="{% url 'export_threat_modeling' systemId=systemId processId=processId %}">
             {% csrf_token %}
             <button id="back" type="submit" class="btn btn-primary">Export as a CSV file</button>
         </form>
+
+
+
+
 
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>

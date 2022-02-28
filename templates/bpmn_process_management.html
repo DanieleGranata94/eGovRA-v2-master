@@ -57,13 +57,13 @@
                     </a>
                 </td>
                 <td style="text-align: center">
-                    <form method="POST" action="{% url 'process_view_task_type' process.0.pk %}">
+                    <form method="POST" action="{% url 'process_view_task_type'  systemId=systemId processId=process.0.pk %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-primary btn-sm">Select process</button>
                     </form>
                 </td>
                 <td style="text-align: center">
-                    <form method="POST" action="{% url 'edit_process' process.0.pk %}">
+                    <form method="POST" action="{% url 'edit_process' systemId=systemId processId=process.0.pk %}">
                         {% csrf_token %}
                             {% if process.1 == False %}
                                 <button type="submit" class="btn btn-primary btn-sm">Edit</button>
