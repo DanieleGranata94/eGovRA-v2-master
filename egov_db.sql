@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Creato il: Feb 23, 2022 alle 14:26
+-- Creato il: Mar 01, 2022 alle 19:19
 -- Versione del server: 10.4.14-MariaDB
 -- Versione PHP: 7.2.34
 
@@ -325,7 +325,8 @@ INSERT INTO `django_migrations` (`id`, `app`, `name`, `applied`) VALUES
 (18, 'sessions', '0001_initial', '2022-02-13 15:10:40.316978'),
 (19, 'parsingbpmn', '0001_initial', '2022-02-13 15:21:16.860121'),
 (20, 'parsingbpmn', '0002_auto_20220215_1634', '2022-02-15 15:35:36.111560'),
-(21, 'parsingbpmn', '0003_auto_20220215_1636', '2022-02-15 15:36:33.882514');
+(21, 'parsingbpmn', '0003_auto_20220215_1636', '2022-02-15 15:36:33.882514'),
+(22, 'parsingbpmn', '0002_auto_20220226_1917', '2022-02-26 18:17:34.925177');
 
 -- --------------------------------------------------------
 
@@ -354,6 +355,26 @@ CREATE TABLE `parsingbpmn_asset` (
   `position` varchar(99) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Dump dei dati per la tabella `parsingbpmn_asset`
+--
+
+INSERT INTO `parsingbpmn_asset` (`id`, `name`, `bpmn_id`, `asset_type_id`, `process_id`, `position`) VALUES
+(427, 'Compile certificate request', 'Activity_0e44ssw', 3, 37, '310:150:100:80'),
+(428, 'Certificate request', 'Activity_0m5vgkb', 1, 37, '450:150:100:80'),
+(429, 'Recieve notification', 'Activity_15a5z8l', 2, 37, '720:140:100:80'),
+(430, 'Download Certificate', 'Activity_1lh76my', 3, 37, '860:140:100:80'),
+(431, 'Acquire certificate request', 'Activity_075eaka', 2, 37, '450:380:100:80'),
+(432, 'Certificate processing', 'Activity_0yo8nd0', 5, 37, '590:380:100:80'),
+(433, 'Notify certification ready', 'Activity_11l7oi5', 1, 37, '720:380:100:80'),
+(434, 'Compile certificate request', 'Activity_0e44ssw', 3, 38, '310:150:100:80'),
+(435, 'Certificate request', 'Activity_0m5vgkb', 1, 38, '450:150:100:80'),
+(436, 'Recieve notification', 'Activity_15a5z8l', 2, 38, '720:140:100:80'),
+(437, 'Download Certificate', 'Activity_1lh76my', 3, 38, '860:140:100:80'),
+(438, 'Acquire certificate request', 'Activity_075eaka', 2, 38, '450:380:100:80'),
+(439, 'Notify certification ready', 'Activity_11l7oi5', 1, 38, '720:380:100:80'),
+(440, 'Certificate processing', NULL, 5, 38, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -365,6 +386,19 @@ CREATE TABLE `parsingbpmn_asset_has_attribute` (
   `asset_id` int(11) NOT NULL,
   `attribute_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dump dei dati per la tabella `parsingbpmn_asset_has_attribute`
+--
+
+INSERT INTO `parsingbpmn_asset_has_attribute` (`id`, `asset_id`, `attribute_id`) VALUES
+(263, 427, 7),
+(264, 428, 1),
+(265, 429, 4),
+(266, 430, 7),
+(267, 431, 4),
+(268, 432, 10),
+(269, 433, 1);
 
 -- --------------------------------------------------------
 
@@ -509,7 +543,8 @@ CREATE TABLE `parsingbpmn_process` (
 --
 
 INSERT INTO `parsingbpmn_process` (`id`, `name`, `xml`, `system_id`) VALUES
-(21, 'Municipality', 'processes/xml/ExamplePaperWithDataAndAnnotation.bpmn', 4);
+(37, 'Municipality', 'processes/xml/bpmn_1.0_olAKiKB.bpmn', 4),
+(38, 'Municipality2', 'processes/xml/diagram_1.bpmn', 4);
 
 -- --------------------------------------------------------
 
@@ -645,6 +680,38 @@ CREATE TABLE `parsingbpmn_system_threatagent` (
   `system_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Dump dei dati per la tabella `parsingbpmn_system_threatagent`
+--
+
+INSERT INTO `parsingbpmn_system_threatagent` (`id`, `category_id`, `system_id`) VALUES
+(1, 4, 3),
+(2, 9, 3),
+(3, 10, 3),
+(4, 13, 3),
+(5, 16, 3),
+(6, 18, 3),
+(7, 20, 3),
+(8, 15, 3),
+(9, 19, 3),
+(10, 12, 3),
+(11, 5, 3),
+(12, 14, 3),
+(13, 4, 4),
+(14, 10, 4),
+(15, 13, 4),
+(16, 16, 4),
+(17, 18, 4),
+(18, 20, 4),
+(19, 1, 4),
+(20, 2, 4),
+(21, 3, 4),
+(22, 9, 4),
+(23, 15, 4),
+(24, 19, 4),
+(25, 5, 4),
+(26, 14, 4);
+
 -- --------------------------------------------------------
 
 --
@@ -656,6 +723,200 @@ CREATE TABLE `parsingbpmn_tacategoryattribute` (
   `attribute_id` int(11) DEFAULT NULL,
   `category_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dump dei dati per la tabella `parsingbpmn_tacategoryattribute`
+--
+
+INSERT INTO `parsingbpmn_tacategoryattribute` (`id`, `attribute_id`, `category_id`) VALUES
+(1, 1, 1),
+(2, 4, 1),
+(3, 6, 1),
+(4, 9, 1),
+(5, 18, 1),
+(6, 20, 1),
+(7, 28, 1),
+(8, 31, 1),
+(9, 32, 1),
+(10, 1, 2),
+(11, 4, 2),
+(12, 7, 2),
+(13, 9, 2),
+(14, 16, 2),
+(15, 19, 2),
+(16, 28, 2),
+(17, 31, 2),
+(18, 32, 2),
+(19, 1, 3),
+(20, 4, 3),
+(21, 5, 3),
+(22, 9, 3),
+(23, 17, 3),
+(24, 19, 3),
+(25, 28, 3),
+(26, 31, 3),
+(27, 32, 3),
+(28, 2, 4),
+(29, 3, 4),
+(30, 7, 4),
+(31, 10, 4),
+(32, 15, 4),
+(33, 22, 4),
+(34, 25, 4),
+(35, 31, 4),
+(36, 2, 5),
+(37, 3, 5),
+(38, 6, 5),
+(39, 13, 5),
+(40, 18, 5),
+(41, 21, 5),
+(42, 23, 5),
+(43, 32, 5),
+(44, 2, 6),
+(45, 3, 6),
+(46, 5, 6),
+(47, 13, 6),
+(48, 18, 6),
+(49, 21, 6),
+(50, 23, 6),
+(51, 30, 6),
+(52, 33, 6),
+(53, 2, 7),
+(54, 3, 7),
+(55, 7, 7),
+(56, 14, 7),
+(57, 18, 7),
+(58, 21, 7),
+(59, 24, 7),
+(60, 30, 7),
+(61, 33, 7),
+(62, 2, 8),
+(63, 3, 8),
+(64, 5, 8),
+(65, 12, 8),
+(66, 18, 8),
+(67, 21, 8),
+(68, 23, 8),
+(69, 30, 8),
+(70, 33, 8),
+(71, 2, 9),
+(72, 3, 9),
+(73, 8, 9),
+(74, 9, 9),
+(75, 17, 9),
+(76, 22, 9),
+(77, 25, 9),
+(78, 26, 9),
+(79, 31, 9),
+(80, 32, 9),
+(81, 2, 10),
+(82, 3, 10),
+(83, 8, 10),
+(84, 14, 10),
+(85, 18, 10),
+(86, 22, 10),
+(87, 25, 10),
+(88, 26, 10),
+(89, 31, 10),
+(90, 32, 10),
+(91, 2, 11),
+(92, 3, 11),
+(93, 5, 11),
+(94, 14, 11),
+(95, 18, 11),
+(96, 22, 11),
+(97, 23, 11),
+(98, 24, 11),
+(99, 30, 11),
+(100, 33, 11),
+(101, 2, 12),
+(102, 3, 12),
+(103, 5, 12),
+(104, 13, 12),
+(105, 18, 12),
+(106, 21, 12),
+(107, 23, 12),
+(108, 29, 12),
+(109, 33, 12),
+(110, 2, 13),
+(111, 3, 13),
+(112, 8, 13),
+(113, 9, 13),
+(114, 15, 13),
+(115, 22, 13),
+(116, 28, 13),
+(117, 31, 13),
+(118, 32, 13),
+(119, 2, 14),
+(120, 3, 14),
+(121, 7, 14),
+(122, 13, 14),
+(123, 18, 14),
+(124, 20, 14),
+(125, 23, 14),
+(126, 27, 14),
+(127, 30, 14),
+(128, 2, 15),
+(129, 3, 15),
+(130, 6, 15),
+(131, 13, 15),
+(132, 18, 15),
+(133, 22, 15),
+(134, 27, 15),
+(135, 29, 15),
+(136, 2, 16),
+(137, 3, 16),
+(138, 7, 16),
+(139, 13, 16),
+(140, 18, 16),
+(141, 21, 16),
+(142, 28, 16),
+(143, 31, 16),
+(144, 32, 16),
+(145, 2, 17),
+(146, 3, 17),
+(147, 7, 17),
+(148, 10, 17),
+(149, 16, 17),
+(150, 21, 17),
+(151, 28, 17),
+(152, 31, 17),
+(153, 32, 17),
+(154, 2, 18),
+(155, 3, 18),
+(156, 6, 18),
+(157, 13, 18),
+(158, 18, 18),
+(159, 22, 18),
+(160, 25, 18),
+(161, 26, 18),
+(162, 27, 18),
+(163, 31, 18),
+(164, 2, 19),
+(165, 3, 19),
+(166, 5, 19),
+(167, 9, 19),
+(168, 15, 19),
+(169, 21, 19),
+(170, 27, 19),
+(171, 29, 19),
+(172, 2, 20),
+(173, 3, 20),
+(174, 6, 20),
+(175, 11, 20),
+(176, 17, 20),
+(177, 21, 20),
+(178, 28, 20),
+(179, 31, 20),
+(180, 2, 21),
+(181, 3, 21),
+(182, 5, 21),
+(183, 12, 21),
+(184, 17, 21),
+(185, 20, 21),
+(186, 23, 21),
+(187, 30, 21),
+(188, 33, 21);
 
 -- --------------------------------------------------------
 
@@ -866,88 +1127,92 @@ INSERT INTO `parsingbpmn_tareplycategory` (`id`, `category_id`, `reply_id`) VALU
 CREATE TABLE `parsingbpmn_threat` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
-  `description` varchar(500) NOT NULL
+  `description` varchar(500) NOT NULL,
+  `owasp_awareness` int(11) DEFAULT NULL,
+  `owasp_ease_of_discovery` int(11) DEFAULT NULL,
+  `owasp_ease_of_exploit` int(11) DEFAULT NULL,
+  `owasp_intrusion_detection` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dump dei dati per la tabella `parsingbpmn_threat`
 --
 
-INSERT INTO `parsingbpmn_threat` (`id`, `name`, `description`) VALUES
-(1, 'Fraud', 'Fraud made by human'),
-(2, 'Sabotage', 'Intentional actions (non-fulfillment or defective fulfillment of personal duties) aimed to cause disruption or damage of IT Assets'),
-(3, 'Vandalism', 'Act of physically damage of IT Assets'),
-(4, 'Theft (devices, storage media and documents)\r\n', 'Stealing of information or IT Assets. [Theft of mobile devices (smartphones/ tablets) - Theft of fi9ed hardware - Theft of documents - Theft of backups]'),
-(5, 'Information leakage/sharing\r\n', 'Sharing information with unauthorised entities. Loss of information confidentiality due to intentional human actions.'),
-(6, 'Unauthorized physical access / Unauthorised entry to premises\r\n', 'Unapproved access to facility.\r\n'),
-(7, 'Coercion, extortion or corruption\r\n', 'Actions caused by coercion, extortion or corruption\r\n'),
-(8, 'Damage from the warfare\r\n', 'Threats of direct impact of warfare activities\r\n'),
-(9, 'Terrorists attack\r\n', 'Threats of bombing or other actions that counts as \"terrorists attacks\"\r\n'),
-(10, 'Information leakage/sharing due to human error\r\n', 'Unintentional distribution of private or sensitive data to an unauthorized entity by staff member.\r\n'),
-(11, 'Erroneous use or administration of devices and systems\r\n', 'Information leakage / sharing / damage caused by users IT Assets misuse (lack of awareness of application features) or wrong / improperly IT Assets configuration or management\r\n'),
-(12, 'Using information from an unreliable source\r\n', 'Bad decision based on unreliable sources of information or unchecked information.\r\n'),
-(13, 'Unintentional change of data in an information system\r\n', 'Loss of information integrity due to human error (information system user mistake)\r\n'),
-(14, 'Inadequate design and planning or improperly adaptation\r\n', 'Threats caused by improperly IT Assets or business processes design (inadequate specifications of IT products, inadequate usability, insecure interfaces, policy/procedure flows, design errors)\r\n'),
-(15, 'Damage caused by a third party \r\n', 'Threats of damage of IT Assets caused by third party \r\n'),
-(16, 'Damages resulting from penetration testing\r\n', 'Threats to information systems caused by improperly / inprepare conducting of IT penetration testing\r\n'),
-(17, 'Loss of information in the cloud\r\n', 'Threats of loosing information or data stored in the cloud\r\n'),
-(18, 'Loss of (integrity of) sensitive information\r\n', 'Threats of loosing information or data (or changing) information classified as sensitive\r\n'),
-(19, 'Loss of devices, storage media and documents\r\n', 'Threats of the lack of availability (loosing) of IT Assets and documents\r\n'),
-(20, 'Destruction of records\r\n', 'Threats of the lack of availability (destruction) of data and records (information) stored in devices and storage media\r\n'),
-(21, 'Disaster (natural earthquakes,floods,landslides, tsunamis,heavy rains,heavy snowfalls,heavy winds)', 'Large scale and large effects natural disasters'),
-(22, 'Fire', 'Threat of fire '),
-(23, 'Pollution, dust, corrosion\r\n', 'Threat of disruption of work of IT systems (hardware) dur to pollution, dust or corrosion (arising from the air)\r\n'),
-(24, 'Thunder stroke\r\n', 'Threat of damage of IT hardware caused by the thunder strike (the electrical overvoltage)\r\n'),
-(25, 'Water\r\n', 'Threat of damage of IT hardware caused by the water\r\n'),
-(26, 'Explosion\r\n', 'empty\r\n'),
-(27, 'Dangerous radiation leak\r\n', 'empty\r\n'),
-(28, 'Unfavorable climatic conditions\r\n', 'Threat of disruption of work of IT systems due to climatic conditions that have the negative effect on hardware\r\n'),
-(29, 'Major events in the environment\r\n', 'empty\r\n'),
-(30, 'Threats from space / Electromagnetic storm\r\n', 'Threats of the negative impact of solar radiation (harmful rays) to a satellites and radio wave communication systems - Electromagnetic storm\r\n'),
-(31, 'Wildlife\r\n', 'empty\r\n'),
-(32, 'Failure of devices or systems\r\n', 'Threat of failure of IT hardware and/or software assets or its parts\r\n'),
-(33, 'Failure or disruption of communication links (communication networks)\r\n', 'Threat of failure or malfunction of communications links \r\n'),
-(34, 'Failure or disruption of main supply\r\n', 'Threat of failure or disruption of supply required for information systems\r\n'),
-(35, 'Failure or disruption of service providers (supply chain)\r\n', 'Threat of failure or disruption of thire party services required for proper operation of information systems\r\n'),
-(36, 'Malfunction of equipment (devices or systems)\r\n', 'Threat of malfunction of IT hardware and/or software assets or its parts\r\n'),
-(37, 'Loss of resources\r\n', 'Unavailability of resources (supply) required for proper operation of information system\r\n'),
-(38, 'Absence of personnel\r\n', 'Unavailability of key personnel and their competences\r\n'),
-(39, 'Strike\r\n', 'Unavailability of staff due strike (large scale absence of personnel)\r\n'),
-(40, 'Loss of support services\r\n', 'Unavailability of support services required for proper operation of information system\r\n'),
-(41, 'Internet outage\r\n', 'Unavailability of the Internet connection\r\n'),
-(42, 'Network outage\r\n', 'Unavailability of communication links\r\n'),
-(43, 'War driving\r\n', 'Threat of locating and possible exploite connection to the wireless network\r\n'),
-(44, 'Intercepting compromising emissions\r\n', 'Threat of disclosure transmitted information using interception and analysis of compromising emission\r\n'),
-(45, 'Interception of information\r\n', 'Threat of interception of information improperly secured in transmission or improperly actions of staff\r\n'),
-(46, 'Interfering radiation\r\n', 'Threat of failure of IT hardware or transmission connection due to electromagnetic induction or electromagnetic radiation emitted from an another source\r\n'),
-(47, 'Replay of messages\r\n', 'Threat in which valid data transmission is maliciously or fraudulently repeated or delayed\r\n'),
-(48, 'Network Reconnaissance, Network traffic manipulation and Information gathering\r\n', 'Threat of identifying information about network to find security weaknesses\r\n'),
-(49, 'Man in the middle/ Session hijacking \r\n', 'Threats that relay on alters of communication between two parties\r\n'),
-(50, 'Identity theft (Identity Fraud/ Account) \r\n', 'Threat of identity theft action\r\n'),
-(51, 'Receive of unsolicited E-mail \r\n', 'Threat of receive of unsolicited E-mail that affect for information security and efficienty of work (SPAM)\r\n'),
-(52, 'Denial of service\r\n', 'Threat of Deny of service type attacks at information systems/services\r\n'),
-(53, 'Malicious code/ software/ activity\r\n', 'Threat of malicious code or software execution\r\n'),
-(54, 'Social Engineering\r\n', 'Phishing attacks, Spear phishing attacks\r\n'),
-(55, 'Abuse of Information Leakage\r\n', '? What is difference between others Physical attack (deliberate/ intentional)?\r\n'),
-(56, 'Generation and use of rogue certificates\r\n', 'Threat of use of rogue certificates\r\n'),
-(57, 'Manipulation of hardware and software\r\n', 'Threat of unauthorized manipulation of hardware and software\r\n'),
-(58, 'Manipulation of information\r\n', 'Threat of intentional data manipulation to mislead information systems or somebody or to cover other nefarious activities (loss of integrity of information) \r\n'),
-(59, 'Misuse of audit tools\r\n', 'Threat of nefarious actions with use of audit tools (discovery security weaknesses in information systems)\r\n'),
-(60, 'Misuse of information/ information systems (including mobile apps)\r\n', 'Threat of nefarious action due to misuse of information / information systems\r\n'),
-(61, 'Unauthorized activities\r\n', 'empty\r\n'),
-(62, 'Unauthorized installation of software\r\n', 'Threat of unauthorized installation of software\r\n'),
-(63, 'Compromising confidential information (data breaches)\r\n', 'Threat of data breach \r\n'),
-(64, 'Hoax\r\n', 'Threat of disruption of work due to False rumor and/or a fake warning\r\n'),
-(65, 'Remote activity (execution)\r\n', 'Threat of remote activity over controled IT Assets\r\n'),
-(66, 'Targeted attacks (APTs etc.)\r\n', 'Threat of sophisticated targetes attack with combination of many attack techniques\r\n'),
-(67, 'Failed of bussines process\r\n', 'empty\r\n'),
-(68, 'Brute force\r\n', 'empty\r\n'),
-(69, 'Abuse of authorizations\r\n', 'empty\r\n'),
-(70, 'Violation of laws or regulations / Breach of legislation\r\n', 'Threat of finacial or legal penatly or lost of trust of customers and collaborators due to violation of law or regulations\r\n'),
-(71, 'Failure to meet contractual requirements\r\n', 'Threat of finacial penatly or lost of trust of customers and collaborators due to failure to meet contractual requirements\r\n'),
-(72, 'Unauthorized use of IPR protected resources\r\n', 'Threat of finacial or legal penatly or lost of trust of customers and collaborators due to improper/illegal use of copyrights material\r\n'),
-(73, 'Abuse of personal data\r\n', 'Threat of illegal use personal data\r\n'),
-(74, 'Judiciary decisions/court orders\r\n', 'empty\r\n');
+INSERT INTO `parsingbpmn_threat` (`id`, `name`, `description`, `owasp_awareness`, `owasp_ease_of_discovery`, `owasp_ease_of_exploit`, `owasp_intrusion_detection`) VALUES
+(1, 'Fraud', 'Fraud made by human', 5, 5, 5, 5),
+(2, 'Sabotage', 'Intentional actions (non-fulfillment or defective fulfillment of personal duties) aimed to cause disruption or damage of IT Assets', 5, 5, 5, 5),
+(3, 'Vandalism', 'Act of physically damage of IT Assets', 5, 5, 5, 5),
+(4, 'Theft (devices, storage media and documents)\r\n', 'Stealing of information or IT Assets. [Theft of mobile devices (smartphones/ tablets) - Theft of fi9ed hardware - Theft of documents - Theft of backups]', 5, 5, 5, 5),
+(5, 'Information leakage/sharing\r\n', 'Sharing information with unauthorised entities. Loss of information confidentiality due to intentional human actions.', 5, 5, 5, 5),
+(6, 'Unauthorized physical access / Unauthorised entry to premises\r\n', 'Unapproved access to facility.\r\n', 5, 5, 5, 5),
+(7, 'Coercion, extortion or corruption\r\n', 'Actions caused by coercion, extortion or corruption\r\n', 5, 5, 5, 5),
+(8, 'Damage from the warfare\r\n', 'Threats of direct impact of warfare activities\r\n', 5, 5, 5, 5),
+(9, 'Terrorists attack\r\n', 'Threats of bombing or other actions that counts as \"terrorists attacks\"\r\n', 5, 5, 5, 5),
+(10, 'Information leakage/sharing due to human error\r\n', 'Unintentional distribution of private or sensitive data to an unauthorized entity by staff member.\r\n', 5, 5, 5, 5),
+(11, 'Erroneous use or administration of devices and systems\r\n', 'Information leakage / sharing / damage caused by users IT Assets misuse (lack of awareness of application features) or wrong / improperly IT Assets configuration or management\r\n', 5, 5, 5, 5),
+(12, 'Using information from an unreliable source\r\n', 'Bad decision based on unreliable sources of information or unchecked information.\r\n', 5, 5, 5, 5),
+(13, 'Unintentional change of data in an information system\r\n', 'Loss of information integrity due to human error (information system user mistake)\r\n', 5, 5, 5, 5),
+(14, 'Inadequate design and planning or improperly adaptation\r\n', 'Threats caused by improperly IT Assets or business processes design (inadequate specifications of IT products, inadequate usability, insecure interfaces, policy/procedure flows, design errors)\r\n', 5, 5, 5, 5),
+(15, 'Damage caused by a third party \r\n', 'Threats of damage of IT Assets caused by third party \r\n', 5, 5, 5, 5),
+(16, 'Damages resulting from penetration testing\r\n', 'Threats to information systems caused by improperly / inprepare conducting of IT penetration testing\r\n', 5, 5, 5, 5),
+(17, 'Loss of information in the cloud\r\n', 'Threats of loosing information or data stored in the cloud\r\n', 5, 5, 5, 5),
+(18, 'Loss of (integrity of) sensitive information\r\n', 'Threats of loosing information or data (or changing) information classified as sensitive\r\n', 5, 5, 5, 5),
+(19, 'Loss of devices, storage media and documents\r\n', 'Threats of the lack of availability (loosing) of IT Assets and documents\r\n', 5, 5, 5, 5),
+(20, 'Destruction of records\r\n', 'Threats of the lack of availability (destruction) of data and records (information) stored in devices and storage media\r\n', 5, 5, 5, 5),
+(21, 'Disaster (natural earthquakes,floods,landslides, tsunamis,heavy rains,heavy snowfalls,heavy winds)', 'Large scale and large effects natural disasters', 5, 5, 5, 5),
+(22, 'Fire', 'Threat of fire ', 5, 5, 5, 5),
+(23, 'Pollution, dust, corrosion\r\n', 'Threat of disruption of work of IT systems (hardware) dur to pollution, dust or corrosion (arising from the air)\r\n', 5, 5, 5, 5),
+(24, 'Thunder stroke\r\n', 'Threat of damage of IT hardware caused by the thunder strike (the electrical overvoltage)\r\n', 5, 5, 5, 5),
+(25, 'Water\r\n', 'Threat of damage of IT hardware caused by the water\r\n', 5, 5, 5, 5),
+(26, 'Explosion\r\n', 'empty\r\n', 5, 5, 5, 5),
+(27, 'Dangerous radiation leak\r\n', 'empty\r\n', 5, 5, 5, 5),
+(28, 'Unfavorable climatic conditions\r\n', 'Threat of disruption of work of IT systems due to climatic conditions that have the negative effect on hardware\r\n', 5, 5, 5, 5),
+(29, 'Major events in the environment\r\n', 'empty\r\n', 5, 5, 5, 5),
+(30, 'Threats from space / Electromagnetic storm\r\n', 'Threats of the negative impact of solar radiation (harmful rays) to a satellites and radio wave communication systems - Electromagnetic storm\r\n', 5, 5, 5, 5),
+(31, 'Wildlife\r\n', 'empty\r\n', 5, 5, 5, 5),
+(32, 'Failure of devices or systems\r\n', 'Threat of failure of IT hardware and/or software assets or its parts\r\n', 5, 5, 5, 5),
+(33, 'Failure or disruption of communication links (communication networks)\r\n', 'Threat of failure or malfunction of communications links \r\n', 5, 5, 5, 5),
+(34, 'Failure or disruption of main supply\r\n', 'Threat of failure or disruption of supply required for information systems\r\n', 5, 5, 5, 5),
+(35, 'Failure or disruption of service providers (supply chain)\r\n', 'Threat of failure or disruption of thire party services required for proper operation of information systems\r\n', 5, 5, 5, 5),
+(36, 'Malfunction of equipment (devices or systems)\r\n', 'Threat of malfunction of IT hardware and/or software assets or its parts\r\n', 5, 5, 5, 5),
+(37, 'Loss of resources\r\n', 'Unavailability of resources (supply) required for proper operation of information system\r\n', 5, 5, 5, 5),
+(38, 'Absence of personnel\r\n', 'Unavailability of key personnel and their competences\r\n', 5, 5, 5, 5),
+(39, 'Strike\r\n', 'Unavailability of staff due strike (large scale absence of personnel)\r\n', 5, 5, 5, 5),
+(40, 'Loss of support services\r\n', 'Unavailability of support services required for proper operation of information system\r\n', 5, 5, 5, 5),
+(41, 'Internet outage\r\n', 'Unavailability of the Internet connection\r\n', 5, 5, 5, 5),
+(42, 'Network outage\r\n', 'Unavailability of communication links\r\n', 5, 5, 5, 5),
+(43, 'War driving\r\n', 'Threat of locating and possible exploite connection to the wireless network\r\n', 5, 5, 5, 5),
+(44, 'Intercepting compromising emissions\r\n', 'Threat of disclosure transmitted information using interception and analysis of compromising emission\r\n', 5, 5, 5, 5),
+(45, 'Interception of information\r\n', 'Threat of interception of information improperly secured in transmission or improperly actions of staff\r\n', 5, 5, 5, 5),
+(46, 'Interfering radiation\r\n', 'Threat of failure of IT hardware or transmission connection due to electromagnetic induction or electromagnetic radiation emitted from an another source\r\n', 5, 5, 5, 5),
+(47, 'Replay of messages\r\n', 'Threat in which valid data transmission is maliciously or fraudulently repeated or delayed\r\n', 5, 5, 5, 5),
+(48, 'Network Reconnaissance, Network traffic manipulation and Information gathering\r\n', 'Threat of identifying information about network to find security weaknesses\r\n', 5, 5, 5, 5),
+(49, 'Man in the middle/ Session hijacking \r\n', 'Threats that relay on alters of communication between two parties\r\n', 5, 5, 5, 5),
+(50, 'Identity theft (Identity Fraud/ Account) \r\n', 'Threat of identity theft action\r\n', 5, 5, 5, 5),
+(51, 'Receive of unsolicited E-mail \r\n', 'Threat of receive of unsolicited E-mail that affect for information security and efficienty of work (SPAM)\r\n', 5, 5, 5, 5),
+(52, 'Denial of service\r\n', 'Threat of Deny of service type attacks at information systems/services\r\n', 5, 5, 5, 5),
+(53, 'Malicious code/ software/ activity\r\n', 'Threat of malicious code or software execution\r\n', 5, 5, 5, 5),
+(54, 'Social Engineering\r\n', 'Phishing attacks, Spear phishing attacks\r\n', 5, 5, 5, 5),
+(55, 'Abuse of Information Leakage\r\n', '? What is difference between others Physical attack (deliberate/ intentional)?\r\n', 5, 5, 5, 5),
+(56, 'Generation and use of rogue certificates\r\n', 'Threat of use of rogue certificates\r\n', 5, 5, 5, 5),
+(57, 'Manipulation of hardware and software\r\n', 'Threat of unauthorized manipulation of hardware and software\r\n', 5, 5, 5, 5),
+(58, 'Manipulation of information\r\n', 'Threat of intentional data manipulation to mislead information systems or somebody or to cover other nefarious activities (loss of integrity of information) \r\n', 5, 5, 5, 5),
+(59, 'Misuse of audit tools\r\n', 'Threat of nefarious actions with use of audit tools (discovery security weaknesses in information systems)\r\n', 5, 5, 5, 5),
+(60, 'Misuse of information/ information systems (including mobile apps)\r\n', 'Threat of nefarious action due to misuse of information / information systems\r\n', 5, 5, 5, 5),
+(61, 'Unauthorized activities\r\n', 'empty\r\n', 5, 5, 5, 5),
+(62, 'Unauthorized installation of software\r\n', 'Threat of unauthorized installation of software\r\n', 5, 5, 5, 5),
+(63, 'Compromising confidential information (data breaches)\r\n', 'Threat of data breach \r\n', 5, 5, 5, 5),
+(64, 'Hoax\r\n', 'Threat of disruption of work due to False rumor and/or a fake warning\r\n', 5, 5, 5, 5),
+(65, 'Remote activity (execution)\r\n', 'Threat of remote activity over controled IT Assets\r\n', 5, 5, 5, 5),
+(66, 'Targeted attacks (APTs etc.)\r\n', 'Threat of sophisticated targetes attack with combination of many attack techniques\r\n', 5, 5, 5, 5),
+(67, 'Failed of bussines process\r\n', 'empty\r\n', 5, 5, 5, 5),
+(68, 'Brute force\r\n', 'empty\r\n', 5, 5, 5, 5),
+(69, 'Abuse of authorizations\r\n', 'empty\r\n', 5, 5, 5, 5),
+(70, 'Violation of laws or regulations / Breach of legislation\r\n', 'Threat of finacial or legal penatly or lost of trust of customers and collaborators due to violation of law or regulations\r\n', 5, 5, 5, 5),
+(71, 'Failure to meet contractual requirements\r\n', 'Threat of finacial penatly or lost of trust of customers and collaborators due to failure to meet contractual requirements\r\n', 5, 5, 5, 5),
+(72, 'Unauthorized use of IPR protected resources\r\n', 'Threat of finacial or legal penatly or lost of trust of customers and collaborators due to improper/illegal use of copyrights material\r\n', 5, 5, 5, 5),
+(73, 'Abuse of personal data\r\n', 'Threat of illegal use personal data\r\n', 5, 5, 5, 5),
+(74, 'Judiciary decisions/court orders\r\n', 'empty\r\n', 5, 5, 5, 5);
 
 -- --------------------------------------------------------
 
@@ -1080,6 +1345,14 @@ CREATE TABLE `parsingbpmn_threatagentriskscores` (
   `updated_at` datetime(6) DEFAULT NULL,
   `system_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dump dei dati per la tabella `parsingbpmn_threatagentriskscores`
+--
+
+INSERT INTO `parsingbpmn_threatagentriskscores` (`id`, `skill`, `size`, `motive`, `opportunity`, `created_at`, `updated_at`, `system_id`) VALUES
+(2, 8, 7, 7, 6, '2022-02-26 17:11:44.040218', '2022-02-26 17:11:44.040218', 3),
+(3, 6, 5, 7, 5, '2022-02-28 15:31:17.525442', '2022-02-28 15:31:17.525442', 4);
 
 -- --------------------------------------------------------
 
@@ -1978,19 +2251,19 @@ ALTER TABLE `django_content_type`
 -- AUTO_INCREMENT per la tabella `django_migrations`
 --
 ALTER TABLE `django_migrations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_asset`
 --
 ALTER TABLE `parsingbpmn_asset`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=343;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=441;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_asset_has_attribute`
 --
 ALTER TABLE `parsingbpmn_asset_has_attribute`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=235;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=270;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_asset_type`
@@ -2020,7 +2293,7 @@ ALTER TABLE `parsingbpmn_control`
 -- AUTO_INCREMENT per la tabella `parsingbpmn_process`
 --
 ALTER TABLE `parsingbpmn_process`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_reply`
@@ -2050,19 +2323,19 @@ ALTER TABLE `parsingbpmn_strideimpactrecord`
 -- AUTO_INCREMENT per la tabella `parsingbpmn_system`
 --
 ALTER TABLE `parsingbpmn_system`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_system_threatagent`
 --
 ALTER TABLE `parsingbpmn_system_threatagent`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_tacategoryattribute`
 --
 ALTER TABLE `parsingbpmn_tacategoryattribute`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=189;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_tareplies_question`
@@ -2104,7 +2377,7 @@ ALTER TABLE `parsingbpmn_threatagentquestion`
 -- AUTO_INCREMENT per la tabella `parsingbpmn_threatagentriskscores`
 --
 ALTER TABLE `parsingbpmn_threatagentriskscores`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_threat_has_attribute`
