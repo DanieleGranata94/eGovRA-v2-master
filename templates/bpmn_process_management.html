@@ -73,7 +73,7 @@
                     </form>
                 </td>
                 <td style="text-align: center">
-                    <form method="POST" action="{% url 'delete_process' process.0.pk %}">
+                    <form method="POST" action="{% url 'delete_process' systemId=systemId processId=process.0.pk %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger btn-sm">Delete process</button>
                     </form>

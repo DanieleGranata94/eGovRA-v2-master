@@ -13,11 +13,11 @@ class System(models.Model):
     def __str__(self):
         return self.name
 
-    def delete(self, *args, **kwargs):
-        processes = Process.objects.filter(system=self)
-        for process in processes:
-            process.xml.delete()
-        super().delete(*args, **kwargs)
+    #def delete(self, *args, **kwargs):
+        #processes = Process.objects.filter(system=self)
+        #for process in processes:
+            #process.xml.delete()
+        #super().delete(*args, **kwargs)
 
 class Process(models.Model):
     name = models.CharField(max_length=100)
@@ -172,7 +172,7 @@ class Stride(models.Model):
     category = models.CharField(max_length=100)
 
 class StrideImpactRecord(models.Model):
-    app = models.ForeignKey(System, on_delete=models.CASCADE,null=True)
+    process = models.ForeignKey(System, on_delete=models.CASCADE,null=True)
     stride = models.ForeignKey(Stride, on_delete=models.CASCADE,null=True)
     financialdamage = models.IntegerField(null=True)
     reputationdamage = models.IntegerField(null=True)

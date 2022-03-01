@@ -126,8 +126,8 @@ def from_ta_to_system_management(request):
 
 
 def bpmn_process_management(request,systemId):
+    pk = systemId
     if request.method == 'POST':
-        pk=systemId
         form = ProcessForm(request.POST, request.FILES)
         if form.is_valid():
             saved_form = form.save(commit=False)
@@ -257,7 +257,7 @@ def bpmn_process_management(request,systemId):
                             asset = Asset(name=dizionario['node_name'], process=Process.objects.get(pk=pk))
                             asset.save()
 
-            return redirect('process_view_task_type', pk)
+            return redirect('process_view_task_type', systemId,pk)
     else:
         form = ProcessForm()
     processes = Process.objects.filter(system=System.objects.get(pk=pk))
@@ -274,18 +274,17 @@ def bpmn_process_management(request,systemId):
         'form':form,'processes_info':processes_info,'pk':pk, 'systemId' : systemId, 'processes':processes
     })
 
-def delete_system(request,pk):
+def delete_system(request,systemId):
     if request.method == 'POST':
-        system = System.objects.get(pk=pk)
+        system = System.objects.get(id=systemId)
         system.delete()
     return redirect('system_management')
 
-def delete_process(request,pk):
+def delete_process(request,systemId,processId):
     if request.method == 'POST':
-        process = Process.objects.get(pk=pk)
-        system_id = process.system.pk
+        process = Process.objects.get(id=processId)
         process.delete()
-    return redirect('bpmn_process_management',system_id)
+    return redirect('bpmn_process_management',systemId)
 
 def process_view_task_type(request,systemId,processId):
     pk = processId
@@ -296,13 +295,13 @@ def process_view_task_type(request,systemId,processId):
             check_attribute = True
     if check_attribute == True:
         asset_type = Asset_type.objects.all()
-        system = Process.objects.get(pk=pk).system
+        system = Process.objects.get(id=processId).system
         processes = Process.objects.filter(system=system)
         return render(request, 'process_view_task_type.html', {
-            'task_list':task_list,'asset_type':asset_type,'systemId':systemId,'pk':pk,'processes':processes
+            'task_list':task_list,'asset_type':asset_type,'systemId':systemId,'processId':processId,'processes':processes
         })
     else:
-        return redirect('process_view_attribute', systemId,pk)
+        return redirect('process_view_attribute', systemId,processId)
 
 def task_type_enrichment(request,systemId,processId):
     if request.method == "POST":
@@ -422,6 +421,7 @@ def get_random_string(length):
     letters = string.ascii_letters
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
+
 
 def writeTextAnnotation_bpmn(pathfile,position,taskId,attribute_value):
     textAnnotationId="TextAnnotation_"+get_random_string(7)
@@ -572,7 +572,7 @@ def threat_modeling(systemId,processId):
     }
     return context
 
-def threat_modeling(systemId,processId,assetId):
+def threat_modeling_per_asset(systemId,processId,assetId):
     assets = Asset.objects.filter(process=Process.objects.get(pk=processId))
     attributes = []
     threats = []
@@ -605,7 +605,7 @@ def threat_modeling(systemId,processId,assetId):
     system = Process.objects.get(pk=processId).system
     processes = Process.objects.filter(system=system)
     context={
-        'threat_model_info':threat_model_info,'systemId':systemId,'processId':processId,'assetId':assetId',processes':processes
+        'threat_model_info':threat_model_info,'systemId':systemId,'processId':processId,'assetId':assetId,'processes':processes
     }
     return context
 
@@ -792,13 +792,14 @@ def bpmn_viewer(request,pk):
         'process':process
     })
 
-
+@csrf_exempt
 def risk_analysis(request, systemId,processId,assetId):
-    process = Process.objects.get(processId=processId)
+    process = Process.objects.get(id=processId)
     processName=process.name
     SelectedComponentName=''
     componentsWithThreats=[]
-    components=Asset.objects.filter(app=app)
+    print(request.POST)
+    components=Asset.objects.filter(process_id=processId)
 
     try:
         if request.POST['dropdown']:
@@ -809,37 +810,36 @@ def risk_analysis(request, systemId,processId,assetId):
         print()
     componentUnderAnalysis=components[0]
     for component in components:
-        if (len(threat_modeling_per_assetFun(component.id)) != 0):
+        if (len(threat_modeling_per_asset(systemId,processId,assetId)) != 0):
             if(SelectedComponentName==component.name):
                 componentsWithThreats.append((component,True))
                 componentUnderAnalysis=component
             else:
                 componentsWithThreats.append((component,False))
 
-    threats = threat_modeling_per_assetFun(componentUnderAnalysis.id)
+    threats =(threat_modeling_per_asset(systemId,processId,assetId))
 
-    TAscores=ThreatAgentRiskScores.objects.filter(app=app)
+    system=System.objects.filter(id=systemId)
+    process=Process.objects.filter(id=processId)
 
-    #ricerca ultimo risultato.
-    maxtimeTA = TAscores[0].updated_at
-    lastScore=TAscores[0]
-    for Tascore in TAscores:
-        if(Tascore.updated_at>maxtimeTA):
-            lastScore=Tascore
+    TAscores=ThreatAgentRiskScores.objects.filter(system=system)
 
-    SIRecords = StrideImpactRecord.objects.filter(app=app)
+    try:
+        #ricerca ultimo risultato.
+        maxtimeTA = TAscores[0].updated_at
+        lastScore=TAscores[0]
+        for Tascore in TAscores:
+            if(Tascore.updated_at>maxtimeTA):
+                lastScore=Tascore
+    except:
+        print("error")
 
-    PreCondition="[n,n,n]"
-    PostCondition="[n,n,n]"
+    SIRecords = StrideImpactRecord.objects.filter(process=process)
+
     LossOfConfidentiality=0
     LossOfIntegrity=0
     LossOfAvailability=0
-    LossOfCPostConditionValue = 0
-    LossOfIPostConditionValue = 0
-    LossOfAPostConditionValue = 0
-    LossOfCPreConditionValue = 0
-    LossOfIPreConditionValue = 0
-    LossOfAPreConditionValue = 0
+
 
     for threat in threats:
         PreCondition=str(threat[0].PreCondition)
@@ -866,72 +866,25 @@ def risk_analysis(request, systemId,processId,assetId):
 
         #elimino [ e ]
 
-        try:
-            PreCondition.replace("[","")
-            PreCondition.replace("]","")
-            PostCondition.replace("[","")
-            PostCondition.replace("]","")
 
-            #splitto con le ,
-            PreCondition=PreCondition.split(",")
-            PostCondition=PostCondition.split(",")
 
-            if(PreCondition[0]=='n'):
-                LossOfCPreConditionValue=0
-            if (PreCondition[0] == 'p'):
-                LossOfCPreConditionValue = 1
-            if(PreCondition[0]=='f'):
-                LossOfCPreConditionValue=2
 
-            if(PostCondition[0]=='n'):
-                LossOfCPostConditionValue=0
-            if (PostCondition[0] == 'p'):
-                LossOfCPostConditionValue = 1
-            if(PostCondition[0]=='f'):
-                LossOfCPostConditionValue=2
 
-            LossOfConfidentiality=((LossOfCPostConditionValue+LossOfCPreConditionValue)*3)+1
+        LossOfConfidentiality= 0
 
-            if (PreCondition[1] == 'n'):
-                LossOfIPreConditionValue = 0
-            if (PreCondition[1] == 'p'):
-                LossOfIPreConditionValue = 1
-            if (PreCondition[1] == 'f'):
-                LossOfIPreConditionValue = 2
 
-            if (PostCondition[1] == 'n'):
-                LossOfIPostConditionValue = 0
-            if (PostCondition[1] == 'p'):
-                LossOfIPostConditionValue = 1
-            if (PostCondition[1] == 'f'):
-                LossOfIPostConditionValue = 2
+        LossOfIntegrity = 0
 
-            LossOfIntegrity = ((LossOfIPostConditionValue + LossOfIPreConditionValue) * 3) + 1
 
-            if (PreCondition[2] == 'n'):
-                LossOfAPreConditionValue = 0
-            if (PreCondition[2] == 'p'):
-                LossOfAPreConditionValue = 1
-            if (PreCondition[2] == 'f'):
-                LossOfAPreConditionValue = 2
-            if (PostCondition[2] == 'n'):
-                LossOfAPostConditionValue = 0
-            if (PostCondition[2] == 'p'):
-                LossOfAPostConditionValue = 1
-            if (PostCondition[2] == 'f'):
-                LossOfAPostConditionValue = 2
 
-            LossOfAvailability = ((LossOfAPostConditionValue + LossOfAPreConditionValue) * 3) + 1
+        LossOfAvailability = 0
 
-            threat[0].lossofc=LossOfConfidentiality
-            threat[0].lossofi=LossOfIntegrity
-            threat[0].lossofa=LossOfAvailability
-
-        except:
-            print("iNFO MISSING")
-
-    return render(request, 'risk_analysis.html', {"appName": appName,"ComponentName":SelectedComponentName,"threats":threats,
-                                                  "components":componentsWithThreats,"ThreatAgentScores":lastScore,"appId": appId})
+        threat[0].lossofc=LossOfConfidentiality
+        threat[0].lossofi=LossOfIntegrity
+        threat[0].lossofa=LossOfAvailability
+        return render(request, 'risk_analysis.html', {"processName": processName,"ComponentName":SelectedComponentName,"threats":threats,
+                                                  "components":componentsWithThreats,"ThreatAgentScores":lastScore,"systemId": systemId,"processId": processId,
+                                                      "assetId": assetId})
 
 
 @csrf_exempt
