@@ -12,8 +12,10 @@ from openpyxl.styles import Font, Border, Side
 from .forms import ProcessForm, SystemForm
 from .models import Process, Asset, System, Asset_has_attribute, Attribute, Asset_type, Attribute_value, \
     Threat_has_attribute, Threat_has_control, ThreatAgentRiskScores, TACategoryAttribute, ThreatAgentCategory, \
-    System_ThreatAgent, TAReplies_Question, TAReplyCategory, Reply, ThreatAgentQuestion, StrideImpactRecord, Stride
+    System_ThreatAgent, TAReplies_Question, TAReplyCategory, Reply, ThreatAgentQuestion, StrideImpactRecord, Stride, \
+    Threat_Stride, Risk
 from .bpmn_python_master.bpmn_python import bpmn_diagram_rep as diagram
+
 
 # Create your views here.
 
@@ -27,106 +29,16 @@ def system_management(request):
     else:
         form = SystemForm()
     systems = System.objects.all()
-    return render(request,'system_management.html',{
-        'form':form,'systems':systems
-    })
-
-def from_ta_to_system_management(request):
-    if request.method == 'POST':
-        form = SystemForm(request.POST)
-        if form.is_valid():
-            form.save()
-            last_system = System.objects.latest('id')
-            return redirect('bpmn_process_management', last_system.pk)
-    else:
-        form = SystemForm()
-    systems = System.objects.all()
-    system_id=request.POST['appId']
-    system= System.objects.get(id=system_id)
-    print(system.pk)
-    print(request.POST)
-    OWASP_Motive_TOT = 0
-    OWASP_Size_TOT = 0
-    OWASP_Opportunity_TOT = 0
-    OWASP_Skill_TOT = 0
-    sommapesi = 0
-    for category,risk_value in request.POST.items():
-        if(category != 'appId' and category!= 'csrfmiddlewaretoken'):
-            TACategory = ThreatAgentCategory.objects.get(category=category)
-            # per ogni categoria ottieni i Attribute relativi e calcola i 4 parametri owasp con le formule nella tesi.
-            TACategoryAttributes = TACategoryAttribute.objects.filter(category=TACategory)
-            print(TACategory.category)
-            OWASP_Motive = 0
-            OWASP_Size = 0
-            OWASP_Opportunity = 0
-            OWASP_Skill = 0
-            limits = 0
-            intent = 0
-            access = 0
-            resources = 0
-            visibility = 0
-            skills = 0
-
-
-            OWASP_Motives = []
-
-            # scorro gli attributi di category
-            for TACategoryAttributeVar in TACategoryAttributes:
-                if (TACategoryAttributeVar.attribute.attribute == 'Skills'):
-                    skills = TACategoryAttributeVar.attribute.score
-                if (TACategoryAttributeVar.attribute.attribute == 'Resources'):
-                    resources = TACategoryAttributeVar.attribute.score
-                if (TACategoryAttributeVar.attribute.attribute == 'Visibility'):
-                    visibility = TACategoryAttributeVar.attribute.score
-                if (TACategoryAttributeVar.attribute.attribute == 'Limits'):
-                    limits = TACategoryAttributeVar.attribute.score
-                if (TACategoryAttributeVar.attribute.attribute == 'Intent'):
-                    intent = TACategoryAttributeVar.attribute.score
-                if (TACategoryAttributeVar.attribute.attribute == 'Access'):
-                    access = TACategoryAttributeVar.attribute.score
-
-            if (risk_value == 'L'):
-                risk_valueNum = 1
-            if (risk_value == 'M'):
-                risk_valueNum = 2
-            if (risk_value == 'H'):
-                risk_valueNum = 3
-
-            sommapesi = sommapesi + risk_valueNum
-            OWASP_Motive = ((((intent / 2) + (limits / 4)) / 2) * 10)
-            OWASP_Opportunity = ((((access / 2) + (resources / 6) + (visibility / 4)) / 3) * 10)
-            OWASP_Size = (resources / 6) * 10
-            OWASP_Skill = (skills / 4) * 10
-
-            OWASP_Motive_TOT += (OWASP_Motive * risk_valueNum)
-            OWASP_Opportunity_TOT += OWASP_Opportunity * risk_valueNum
-            OWASP_Size_TOT += OWASP_Size * risk_valueNum
-            OWASP_Skill_TOT += OWASP_Skill * risk_valueNum
-
-
-    OWASP_Skill_TOT = int(round(OWASP_Skill_TOT / sommapesi))
-    OWASP_Motive_TOT = int(round(OWASP_Motive_TOT / sommapesi))
-    OWASP_Size_TOT = int(round(OWASP_Size_TOT / sommapesi))
-    OWASP_Opportunity_TOT = int(round(OWASP_Opportunity_TOT / sommapesi))
-
-    system = System.objects.get(pk=system.pk)
-
-    ScoreAlreadyCreated = ThreatAgentRiskScores.objects.filter(system=system)
-    if (not ThreatAgentRiskScores.objects.filter(system=system).exists()):
-        obj = ThreatAgentRiskScores.objects.get_or_create(
-            system=system,
-            skill=OWASP_Skill_TOT,
-            size=OWASP_Size_TOT,
-            motive=OWASP_Motive_TOT,
-            opportunity=OWASP_Opportunity_TOT)
-
-    return render(request,'system_management.html',{
-        'form':form,'systems':systems
+    return render(request, 'system_management.html', {
+        'form': form, 'systems': systems
     })
 
 
-def bpmn_process_management(request,systemId):
+
+
+def bpmn_process_management(request, systemId):
     pk = systemId
+    asset_type = None
     if request.method == 'POST':
         form = ProcessForm(request.POST, request.FILES)
         if form.is_valid():
@@ -138,9 +50,9 @@ def bpmn_process_management(request,systemId):
             pk = last_process.pk
             bpmn_graph.load_diagram_from_xml_file(Process.objects.get(pk=pk).xml)
             lista = bpmn_graph.get_nodes()
-            #print(lista)
-            annotations=[]
-            associations=[]
+            # print(lista)
+            annotations = []
+            associations = []
 
             for tuple in lista:
                 for dizionario in tuple:
@@ -156,46 +68,48 @@ def bpmn_process_management(request,systemId):
                         except KeyError:
                             print()
 
-            e=""
+            e = ""
             for tuple in lista:
                 for dizionario in tuple:
                     if type(dizionario) is dict:
-                        if dizionario['type'].endswith("Task"):
+                        if dizionario['type'].lower().endswith("task"):
                             attribute_value = []
                             id_task = dizionario['id']
                             x = dizionario["x"]
                             y = dizionario["y"]
                             width = dizionario["width"]
                             height = dizionario["height"]
+                            asset_type=None
                             position = x + ":" + y + ":" + width + ":" + height
                             if dizionario['type'].startswith("send"):
                                 asset_type = Asset_type.objects.get(name="Send task")
-                                e=""
+                                e = ""
                                 for assoc in associations:
-                                    if(id_task==assoc['association'][1]):
-                                        target_ref=assoc['association'][2]
-                                        for textAnn in annotations:
-                                            if(target_ref==textAnn['id']):
-                                                e= (textAnn['textAnnotation'][0][1])
-                                    e = e.replace(" ","_")
-                                    e = e.lower()
-                                if e=="pec_communication":
-                                    attribute_value.append(Attribute_value.objects.get(value="PEC communication"))
-                                elif e=="mail_communication":
-                                    attribute_value.append(Attribute_value.objects.get(value="Mail communication"))
-                                elif e=="post_office_communication":
-                                    attribute_value.append(Attribute_value.objects.get(value="Post office communication"))
-                            elif dizionario['type'].startswith("receive"):
-                                asset_type = Asset_type.objects.get(name="Receive task")
-                                id_task = dizionario['id']
-                                e=""
-                                for assoc in associations:
-                                    if(id_task==assoc['association'][1]):
+                                    if (id_task == assoc['association'][1]):
                                         target_ref = assoc['association'][2]
                                         for textAnn in annotations:
                                             if (target_ref == textAnn['id']):
-                                                e= (textAnn['textAnnotation'][0][1])
-                                    e = e.replace(" ","_")
+                                                e = (textAnn['textAnnotation'][0][1])
+                                    e = e.replace(" ", "_")
+                                    e = e.lower()
+                                if e == "pec_communication":
+                                    attribute_value.append(Attribute_value.objects.get(value="PEC communication"))
+                                elif e == "mail_communication":
+                                    attribute_value.append(Attribute_value.objects.get(value="Mail communication"))
+                                elif e == "post_office_communication":
+                                    attribute_value.append(
+                                        Attribute_value.objects.get(value="Post office communication"))
+                            elif dizionario['type'].startswith("receive"):
+                                asset_type = Asset_type.objects.get(name="Receive task")
+                                id_task = dizionario['id']
+                                e = ""
+                                for assoc in associations:
+                                    if (id_task == assoc['association'][1]):
+                                        target_ref = assoc['association'][2]
+                                        for textAnn in annotations:
+                                            if (target_ref == textAnn['id']):
+                                                e = (textAnn['textAnnotation'][0][1])
+                                    e = e.replace(" ", "_")
                                     e = e.lower()
                                 if e == "pec_communication":
                                     attribute_value.append(Attribute_value.objects.get(value="PEC communication"))
@@ -207,18 +121,18 @@ def bpmn_process_management(request,systemId):
                             elif dizionario['type'].startswith("user"):
                                 asset_type = Asset_type.objects.get(name="User task")
                                 id_task = dizionario['id']
-                                e=""
+                                e = ""
                                 for assoc in associations:
-                                    if(id_task==assoc['association'][1]):
+                                    if (id_task == assoc['association'][1]):
                                         target_ref = assoc['association'][2]
                                         for textAnn in annotations:
                                             if (target_ref == textAnn['id']):
-                                                e= (textAnn['textAnnotation'][0][1])
-                                    e = e.replace(" ","_")
+                                                e = (textAnn['textAnnotation'][0][1])
+                                    e = e.replace(" ", "_")
                                     e = e.lower()
-                                if e=="online":
+                                if e == "online":
                                     attribute_value.append(Attribute_value.objects.get(value="Online"))
-                                elif e=="offline":
+                                elif e == "offline":
                                     attribute_value.append(Attribute_value.objects.get(value="Offline"))
                             elif dizionario['type'].startswith("manual"):
                                 asset_type = Asset_type.objects.get(name="Manual task")
@@ -226,18 +140,18 @@ def bpmn_process_management(request,systemId):
                             elif dizionario['type'].startswith("service"):
                                 asset_type = Asset_type.objects.get(name="Service task")
                                 id_task = dizionario['id']
-                                e=""
+                                e = ""
                                 for assoc in associations:
-                                    if(id_task==assoc['association'][1]):
+                                    if (id_task == assoc['association'][1]):
                                         target_ref = assoc['association'][2]
                                         for textAnn in annotations:
                                             if (target_ref == textAnn['id']):
-                                                e= (textAnn['textAnnotation'][0][1])
-                                    e = e.replace(" ","_")
+                                                e = (textAnn['textAnnotation'][0][1])
+                                    e = e.replace(" ", "_")
                                 e = e.lower()
-                                if e=="statefull":
+                                if e == "statefull":
                                     attribute_value.append(Attribute_value.objects.get(value="Statefull"))
-                                elif e=="stateless":
+                                elif e == "stateless":
                                     attribute_value.append(Attribute_value.objects.get(value="Stateless"))
                             elif dizionario['type'].startswith("script"):
                                 asset_type = Asset_type.objects.get(name="Script task")
@@ -245,19 +159,20 @@ def bpmn_process_management(request,systemId):
                             elif dizionario['type'].startswith("business"):
                                 asset_type = Asset_type.objects.get(name="Business rule task")
                                 attribute_value.append(Attribute_value.objects.get(value="Business rule task"))
-                            asset = Asset(name=dizionario['node_name'],bpmn_id=id_task,position=position, process=Process.objects.get(pk=pk),asset_type=asset_type)
+                            asset = Asset(name=dizionario['node_name'], bpmn_id=id_task, position=position,
+                                          process=Process.objects.get(pk=pk), asset_type=asset_type)
                             asset.save()
                             attribute = []
                             for value in attribute_value:
-                                attribute.append(Attribute.objects.get(asset_type=asset_type,attribute_value=value))
+                                attribute.append(Attribute.objects.get(asset_type=asset_type, attribute_value=value))
                             for a in attribute:
-                                asset_has_attribute = Asset_has_attribute(asset=asset,attribute=a)
+                                asset_has_attribute = Asset_has_attribute(asset=asset, attribute=a)
                                 asset_has_attribute.save()
                         elif dizionario['type'].endswith("task"):
                             asset = Asset(name=dizionario['node_name'], process=Process.objects.get(pk=pk))
                             asset.save()
 
-            return redirect('process_view_task_type', systemId,pk)
+            return redirect('process_view_task_type', systemId, pk)
     else:
         form = ProcessForm()
     processes = Process.objects.filter(system=System.objects.get(pk=pk))
@@ -269,24 +184,27 @@ def bpmn_process_management(request,systemId):
             if not Asset_has_attribute.objects.filter(asset=asset):
                 check_attribute = True
         check_box.append(check_attribute)
-    processes_info = zip(processes,check_box)
-    return render(request,'bpmn_process_management.html',{
-        'form':form,'processes_info':processes_info,'pk':pk, 'systemId' : systemId, 'processes':processes
+    processes_info = zip(processes, check_box)
+    return render(request, 'bpmn_process_management.html', {
+        'form': form, 'processes_info': processes_info, 'pk': pk, 'systemId': systemId, 'processes': processes
     })
 
-def delete_system(request,systemId):
+
+def delete_system(request, systemId):
     if request.method == 'POST':
         system = System.objects.get(id=systemId)
         system.delete()
     return redirect('system_management')
 
-def delete_process(request,systemId,processId):
+
+def delete_process(request, systemId, processId):
     if request.method == 'POST':
         process = Process.objects.get(id=processId)
         process.delete()
-    return redirect('bpmn_process_management',systemId)
+    return redirect('bpmn_process_management', systemId)
 
-def process_view_task_type(request,systemId,processId):
+
+def process_view_task_type(request, systemId, processId):
     pk = processId
     task_list = Asset.objects.filter(process=Process.objects.get(pk=pk))
     check_attribute = False
@@ -298,12 +216,14 @@ def process_view_task_type(request,systemId,processId):
         system = Process.objects.get(id=processId).system
         processes = Process.objects.filter(system=system)
         return render(request, 'process_view_task_type.html', {
-            'task_list':task_list,'asset_type':asset_type,'systemId':systemId,'processId':processId,'processes':processes
+            'task_list': task_list, 'asset_type': asset_type, 'systemId': systemId, 'processId': processId,
+            'processes': processes
         })
     else:
-        return redirect('process_view_attribute', systemId,processId)
+        return redirect('process_view_attribute', systemId, processId)
 
-def task_type_enrichment(request,systemId,processId):
+
+def task_type_enrichment(request, systemId, processId):
     if request.method == "POST":
         assets_for_process = Asset.objects.filter(process=Process.objects.get(pk=processId))
         task_enrichment = []
@@ -316,23 +236,23 @@ def task_type_enrichment(request,systemId,processId):
                 types.append(Asset_type.objects.get(pk=type))
             else:
                 types.append(None)
-        for asset,type in zip(assets_for_process,types):
+        for asset, type in zip(assets_for_process, types):
             if type != None:
                 x = Asset.objects.get(pk=asset.pk)
                 x.asset_type = type
                 x.save()
-        return redirect('process_view_attribute',systemId,processId)
+        return redirect('process_view_attribute', systemId, processId)
     else:
-        return redirect('task_type_enrichment',systemId,processId)
+        return redirect('task_type_enrichment', systemId, processId)
 
 
-def process_view_attribute(request,systemId,processId):
+def process_view_attribute(request, systemId, processId):
     task_list = Asset.objects.filter(process=Process.objects.get(pk=processId))
     check_attribute = False
     for task in task_list:
         if not Asset_has_attribute.objects.filter(asset=task):
             check_attribute = True
-    if check_attribute==True:
+    if check_attribute == True:
         task_attributes = []
         list_attributes = []
         for task in task_list:
@@ -352,20 +272,23 @@ def process_view_attribute(request,systemId,processId):
         service = Attribute.objects.filter(asset_type=Asset_type.objects.get(name="Service task"))
         script = Attribute.objects.filter(asset_type=Asset_type.objects.get(name="Script task"))
         business = Attribute.objects.filter(asset_type=Asset_type.objects.get(name="Business rule task"))
-        task_info = zip(task_list,list_attributes)
+        task_info = zip(task_list, list_attributes)
         system = Process.objects.get(pk=processId).system
         processes = Process.objects.filter(system=system)
         return render(request, 'process_view_attribute.html', {
-                'task_info':task_info,'send':send,'receive':receive,'user':user,'manual':manual,'service':service,
-                'script':script,'business':business,'systemId':systemId,'processId':processId,'processes':processes})
+            'task_info': task_info, 'send': send, 'receive': receive, 'user': user, 'manual': manual,
+            'service': service,
+            'script': script, 'business': business, 'systemId': systemId, 'processId': processId,
+            'processes': processes})
     else:
-        return redirect('threats_and_controls',systemId,processId)
+        return redirect('threats_and_controls', systemId, processId)
 
-def process_enrichment(request,systemId,processId):
+
+def process_enrichment(request, systemId, processId):
     if request.method == "POST":
-        pk=processId
+        pk = processId
         task_list = Asset.objects.filter(process=Process.objects.get(pk=pk))
-        pathfile=Process.objects.filter(id=pk)[0].xml
+        pathfile = Process.objects.filter(id=pk)[0].xml
 
         check_attribute = False
         for task in task_list:
@@ -384,16 +307,15 @@ def process_enrichment(request,systemId,processId):
                 else:
                     attributes.append(None)
 
-            for asset,attribute in zip(assets_for_process,attributes):
+            for asset, attribute in zip(assets_for_process, attributes):
                 if attribute != None:
-                    asset_has_attribute = Asset_has_attribute(asset=asset,attribute=attribute)
+                    asset_has_attribute = Asset_has_attribute(asset=asset, attribute=attribute)
 
-                    writeTextAnnotation_bpmn(pathfile,asset.position,asset.bpmn_id,attribute.attribute_value)
-
+                    # writeTextAnnotation_bpmn(pathfile,asset.position,asset.bpmn_id,attribute.attribute_value)
 
                     asset_has_attribute.save()
 
-            return redirect('threats_and_controls',systemId,processId)
+            return redirect('threats_and_controls', systemId, processId)
         else:
             assets_for_process = Asset.objects.filter(process=Process.objects.get(pk=pk))
             attributes_enrichment = []
@@ -410,12 +332,14 @@ def process_enrichment(request,systemId,processId):
             for asset, attribute in zip(assets_for_process, attributes):
                 if attribute != None:
                     Asset_has_attribute.objects.filter(asset=asset).update(attribute=attribute)
-            return redirect('threats_and_controls',systemId, processId)
+            return redirect('threats_and_controls', systemId, processId)
     else:
-        return redirect('process_enrichment',systemId,processId)
+        return redirect('process_enrichment', systemId, processId)
+
 
 import random
 import string
+
 
 def get_random_string(length):
     letters = string.ascii_letters
@@ -423,56 +347,53 @@ def get_random_string(length):
     return result_str
 
 
-def writeTextAnnotation_bpmn(pathfile,position,taskId,attribute_value):
-    textAnnotationId="TextAnnotation_"+get_random_string(7)
-    textAnnotation="\
-    <bpmn:textAnnotation id=\""+str(textAnnotationId)+"\">\n \
-    <bpmn:text>"+str(attribute_value)+"</bpmn:text>\n \
+def writeTextAnnotation_bpmn(pathfile, position, taskId, attribute_value):
+    textAnnotationId = "TextAnnotation_" + get_random_string(7)
+    textAnnotation = "\
+    <bpmn:textAnnotation id=\"" + str(textAnnotationId) + "\">\n \
+    <bpmn:text>" + str(attribute_value) + "</bpmn:text>\n \
     </bpmn:textAnnotation>\n"
-    associationId="Association_"+get_random_string(7)
-    association="<bpmn:association id=\""+str(associationId)+"\" sourceRef=\""+taskId+"\" targetRef=\""+textAnnotationId+"\" />"
-    positionValues=position.split(":")
-    x=positionValues[0]
-    y=positionValues[1]
-    width=positionValues[2]
-    height=positionValues[3]
+    associationId = "Association_" + get_random_string(7)
+    association = "<bpmn:association id=\"" + str(
+        associationId) + "\" sourceRef=\"" + taskId + "\" targetRef=\"" + textAnnotationId + "\" />"
+    positionValues = position.split(":")
+    x = positionValues[0]
+    y = positionValues[1]
+    width = positionValues[2]
+    height = positionValues[3]
 
-    stringToWrite=str(textAnnotation)+" "+str(association)
-    shapetextAnn="<bpmndi:BPMNShape id=\""+textAnnotationId+"_di\" bpmnElement="+textAnnotationId+">\n\
-        <dc:Bounds x=\""+str(int(x)+20)+"\" y=\""+str(int(y)+20)+"\" width=\""+str(width)+"\" height=\""+height+"\" />\n\
+    stringToWrite = str(textAnnotation) + " " + str(association)
+    shapetextAnn = "<bpmndi:BPMNShape id=\"" + textAnnotationId + "_di\" bpmnElement=" + textAnnotationId + ">\n\
+        <dc:Bounds x=\"" + str(int(x) + 20) + "\" y=\"" + str(int(y) + 20) + "\" width=\"" + str(
+        width) + "\" height=\"" + height + "\" />\n\
       </bpmndi:BPMNShape>\n"
 
-    shapeAssoc="<bpmndi:BPMNShape id=\""+associationId+"_di\" bpmnElement="+associationId+">\n\
-        <dc:Bounds x=\""+x+"\" y=\""+y+"\"/>\n\
-        <dc:Bounds x=\""+str(int(x)+20)+"\" y=\""+str(int(y)+20)+"\"/>\n\
+    shapeAssoc = "<bpmndi:BPMNShape id=\"" + associationId + "_di\" bpmnElement=" + associationId + ">\n\
+        <dc:Bounds x=\"" + x + "\" y=\"" + y + "\"/>\n\
+        <dc:Bounds x=\"" + str(int(x) + 20) + "\" y=\"" + str(int(y) + 20) + "\"/>\n\
       </bpmndi:BPMNShape>\n"
 
     f = open(str(pathfile), "r+")
-    stringFile=f.read()
+    stringFile = f.read()
 
     from xml.dom.minidom import parse, parseString
 
-    datasource = open(str(pathfile)) #convert to minidom object
+    datasource = open(str(pathfile))  # convert to minidom object
     minidomObject = parse(datasource)
     process = minidomObject.getElementsByTagName('bpmn:process')
     for e in process:
-        if(taskId in e.toxml()):
-
-            print("per il task "+str(taskId)+" il process è ")
+        if (taskId in e.toxml()):
+            print("per il task " + str(taskId) + " il process è ")
             print(e.toxml())
 
-    #task[0].firstChild.nodeValue
+    # task[0].firstChild.nodeValue
 
-    #Process_1j43nxw
+    # Process_1j43nxw
 
-
-    #print(minidomObject.toxml()) #convert to xml string
-
+    # print(minidomObject.toxml()) #convert to xml string
 
 
-
-
-def edit_process(request,systemId,processId):
+def edit_process(request, systemId, processId):
     if request.method == "POST":
         assets = Asset.objects.filter(process=Process.objects.get(pk=processId))
         assets_type = []
@@ -481,7 +402,7 @@ def edit_process(request,systemId,processId):
             assets_type.append(asset.asset_type)
             list_attributes.append("empty")
 
-        task_info = zip(assets,list_attributes)
+        task_info = zip(assets, list_attributes)
         send = Attribute.objects.filter(asset_type=Asset_type.objects.get(name="Send task"))
         receive = Attribute.objects.filter(asset_type=Asset_type.objects.get(name="Receive task"))
         user = Attribute.objects.filter(asset_type=Asset_type.objects.get(name="User task"))
@@ -493,9 +414,11 @@ def edit_process(request,systemId,processId):
         processes = Process.objects.filter(system=system)
         return render(request, 'process_view_attribute.html', {
             'task_info': task_info, 'send': send, 'receive': receive, 'user': user, 'manual': manual,
-            'service': service,'script': script, 'business': business, 'systemId':systemId,'processId': processId, 'processes': processes})
+            'service': service, 'script': script, 'business': business, 'systemId': systemId, 'processId': processId,
+            'processes': processes})
 
-def threats_and_controls(request,systemId,processId):
+
+def threats_and_controls(request, systemId, processId):
     process = Process.objects.get(pk=processId)
     assets = Asset.objects.filter(process=process)
     attributes = []
@@ -530,11 +453,13 @@ def threats_and_controls(request,systemId,processId):
     system = Process.objects.get(pk=processId).system
     processes = Process.objects.filter(system=system)
     return render(request, 'threats_and_controls.html', {
-        'process_name':process.name,'clear_list_threats': clear_list_threats,'clear_list_controls':clear_list_controls,'systemId':systemId,
-        'processId':processId,'processes':processes
+        'process_name': process.name, 'clear_list_threats': clear_list_threats,
+        'clear_list_controls': clear_list_controls, 'systemId': systemId,
+        'processId': processId, 'processes': processes
     })
 
-def threat_modeling(systemId,processId):
+
+def threat_modeling(systemId, processId):
     assets = Asset.objects.filter(process=Process.objects.get(pk=processId))
     attributes = []
     threats = []
@@ -559,88 +484,75 @@ def threat_modeling(systemId,processId):
             threat = threat.threat
             controls_per_threat = Threat_has_control.objects.filter(threat=threat)
             for control in controls_per_threat:
-                control= control.control
+                control = control.control
                 if control not in list_controls:
                     list_controls.append(control)
         controls_per_asset.append(list_controls)
 
-    threat_model_info = zip(assets, attributes, threats, controls,controls_per_asset)
+    threat_model_info = zip(assets, attributes, threats, controls, controls_per_asset)
     system = Process.objects.get(pk=processId).system
     processes = Process.objects.filter(system=system)
-    context={
-        'threat_model_info':threat_model_info,'systemId':systemId,'processId':processId,'processes':processes
+    context = {
+        'threat_model_info': threat_model_info, 'systemId': systemId, 'processId': processId, 'processes': processes
     }
     return context
 
-def threat_modeling_per_asset(systemId,processId,assetId):
-    assets = Asset.objects.filter(process=Process.objects.get(pk=processId))
+
+def threat_modeling_per_asset(systemId, processId, assetId):
     attributes = []
-    threats = []
-    controls = []
+    threats_with_strides = []
+    #attributi dell'asset
     attributes.append(Asset_has_attribute.objects.filter(asset=Asset.objects.get(id=assetId)))
+
     for list_attribute in attributes:
         for attribute in list_attribute:
             attribute = attribute.attribute
-            threats.append(Threat_has_attribute.objects.filter(attribute=attribute))
-    for threats_of_asset in threats:
-        sublist_controls = []
-        for threat in threats_of_asset:
-            threat = threat.threat
-            sublist_controls.append(Threat_has_control.objects.filter(threat=threat))
-        controls.append(sublist_controls)
+            threats = Threat_has_attribute.objects.filter(attribute=attribute)
+            for threat in threats:
+                strides=Threat_Stride.objects.filter(threat=threat.threat)
+                threats_with_strides.append((threat,strides))
 
-    controls_per_asset = []
-    for asset in threats:
-        list_controls = []
-        for threat in asset:
-            threat = threat.threat
-            controls_per_threat = Threat_has_control.objects.filter(threat=threat)
-            for control in controls_per_threat:
-                control= control.control
-                if control not in list_controls:
-                    list_controls.append(control)
-        controls_per_asset.append(list_controls)
 
-    threat_model_info = zip(assets, attributes, threats, controls,controls_per_asset)
-    system = Process.objects.get(pk=processId).system
-    processes = Process.objects.filter(system=system)
-    context={
-        'threat_model_info':threat_model_info,'systemId':systemId,'processId':processId,'assetId':assetId,'processes':processes
+    threat_model_info = threats_with_strides
+    context = {
+        'threat_model_info': threat_model_info, 'systemId': systemId, 'processId': processId, 'assetId': assetId
     }
     return context
 
-def threat_modeling_view(request,systemId,processId):
-    context=threat_modeling(systemId,processId)
-    return render(request, 'threat_modeling.html',context)
 
-def export_threat_modeling(request,systemId,processId):
+def threat_modeling_view(request, systemId, processId):
+    context = threat_modeling(systemId, processId)
+    return render(request, 'threat_modeling.html', context)
+
+
+def export_threat_modeling(request, systemId, processId):
     if request.method == "POST":
 
-        #help: https://djangotricks.blogspot.com/2019/02/how-to-export-data-to-xlsx-files.html
+        # help: https://djangotricks.blogspot.com/2019/02/how-to-export-data-to-xlsx-files.html
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         )
         response['Content-Disposition'] = 'attachment; filename={date}-{name}-report.xlsx'.format(
             date=datetime.now().strftime('%Y-%m-%d'),
-            name=Process.objects.get(pk=processId).name.replace(" ","_")
+            name=Process.objects.get(pk=processId).name.replace(" ", "_")
         )
         workbook = Workbook()
 
         # Get active worksheet/tab
         worksheet = workbook.active
         worksheet.title = 'Threat_modeling_REPORT'
-        columns = ['Asset name', 'Asset type', 'Asset attributes', 'Threats','Policy per asset']
+        columns = ['Asset name', 'Asset type', 'Asset attributes', 'Threats', 'Policy per asset']
         row_num = 1
 
         # Assign the titles for each cell of the header
         for col_num, column_title in enumerate(columns, 1):
             cell = worksheet.cell(row=row_num, column=col_num)
             cell.value = column_title
-            cell.font = Font(name="Times New Roman",size=12,bold=True,color='FF0000')
-            cell.border = Border(left=Side(border_style="thin",color='FF000000'),
-                                 right=Side(border_style="thin",color='FF000000'),
-                                 top=Side(border_style="thin",color='FF000000'),
-                                 bottom=Side(border_style="thin",color='FF000000'),)
+            cell.font = Font(name="Times New Roman", size=12, bold=True, color='FF0000')
+            cell.border = Border(left=Side(border_style="thin", color='FF000000'),
+                                 right=Side(border_style="thin", color='FF000000'),
+                                 top=Side(border_style="thin", color='FF000000'),
+                                 bottom=Side(border_style="thin", color='FF000000'), )
 
         assets = Asset.objects.filter(process=Process.objects.get(pk=processId))
         attributes = []
@@ -678,7 +590,7 @@ def export_threat_modeling(request,systemId,processId):
                         list_controls.append(control)
             controls_per_asset.append(list_controls)
 
-        for asset,attribute,threat,control in zip(assets,attributes_list,threats_list,controls_per_asset):
+        for asset, attribute, threat, control in zip(assets, attributes_list, threats_list, controls_per_asset):
             row_num += 1
 
             if not threat:
@@ -692,7 +604,7 @@ def export_threat_modeling(request,systemId,processId):
                 asset.asset_type.name,
                 str(attribute[0]),
                 threat0,
-                "CIS."+str(control[0].pk)+" - "+str(control[0])
+                "CIS." + str(control[0].pk) + " - " + str(control[0])
             ]
 
             # Assign the data for each cell of the row
@@ -707,7 +619,7 @@ def export_threat_modeling(request,systemId,processId):
 
             count_attr = 0
             old_row = row_num
-            while count_attr < len(attribute)-1:
+            while count_attr < len(attribute) - 1:
                 count_attr += 1
                 row_num += 1
 
@@ -730,10 +642,10 @@ def export_threat_modeling(request,systemId,processId):
             count_threats = 0
             count_controls = 0
             row_num = old_row
-            while count_threats < len(threat)-1 or count_controls < len(control)-1:
+            while count_threats < len(threat) - 1 or count_controls < len(control) - 1:
                 row_num += 1
 
-                if count_threats < len(threat)-1 and count_controls < len(control)-1:
+                if count_threats < len(threat) - 1 and count_controls < len(control) - 1:
                     count_threats += 1
                     count_controls += 1
 
@@ -744,7 +656,7 @@ def export_threat_modeling(request,systemId,processId):
                         str(threat[count_threats]),
                         "CIS." + str(control[count_controls].pk) + " - " + str(control[count_controls])
                     ]
-                elif count_threats < len(threat)-1 and not count_controls < len(control)-1:
+                elif count_threats < len(threat) - 1 and not count_controls < len(control) - 1:
                     count_threats += 1
 
                     row = [
@@ -773,7 +685,7 @@ def export_threat_modeling(request,systemId,processId):
                                          right=Side(border_style="thin", color='FF000000'),
                                          top=Side(border_style="thin", color='FF000000'),
                                          bottom=Side(border_style="thin", color='FF000000'), )
-        #Per effettuare il resize delle celle in base a quella più grande
+        # Per effettuare il resize delle celle in base a quella più grande
         dims = {}
         for row in worksheet.rows:
             for cell in row:
@@ -786,350 +698,320 @@ def export_threat_modeling(request,systemId,processId):
 
         return response
 
-def bpmn_viewer(request,pk):
+
+def bpmn_viewer(request, pk):
     process = Process.objects.get(pk=pk)
-    return render(request,'bpmn_viewer.html',{
-        'process':process
+    return render(request, 'bpmn_viewer.html', {
+        'process': process
     })
 
+
 @csrf_exempt
-def risk_analysis(request, systemId,processId,assetId):
+def risk_analysis(request, systemId, processId, assetId):
+    stride_impact_list = []
+    risk_list=[]
     process = Process.objects.get(id=processId)
-    processName=process.name
-    SelectedComponentName=''
-    componentsWithThreats=[]
-    print(request.POST)
-    components=Asset.objects.filter(process_id=processId)
+    # delete all StrideImpactRecord related to process
+    StrideImpactRecord.objects.filter(process=process).delete()
 
-    try:
-        if request.POST['dropdown']:
-            SelectedComponentName=request.POST['dropdown']
-        else:
-            SelectedComponentName=components[0].name
-    except:
-        print()
-    componentUnderAnalysis=components[0]
-    for component in components:
-        if (len(threat_modeling_per_asset(systemId,processId,assetId)) != 0):
-            if(SelectedComponentName==component.name):
-                componentsWithThreats.append((component,True))
-                componentUnderAnalysis=component
-            else:
-                componentsWithThreats.append((component,False))
+    save = False
+    count = 0
+    for info, value in (request.POST).items():
+        splittedInfo = info.split('_')
+        stride = splittedInfo[0]
+        impactInfo = splittedInfo[1]
+        if (stride == 'spoofing'):
+            strideCategory = 'Spoofing'
+        if (stride == 'tampering'):
+            strideCategory = 'Tampering'
+        if (stride == 'repudiation'):
+            strideCategory = 'Repudiation'
+        if (stride == 'informationdisclosure'):
+            strideCategory = 'Information Disclosure'
+        if (stride == 'dos'):
+            strideCategory = 'Denial Of Services'
+        if (stride == 'elevationofprivileges'):
+            strideCategory = 'Elevation of privilege'
 
-    threats =(threat_modeling_per_asset(systemId,processId,assetId))
+        if (impactInfo == 'noncompliance'):
+            NonComplianceString = 'Non Compliance'
+            NonComplianceValue = value
+            stride_impact_list.append((strideCategory, NonComplianceString, NonComplianceValue))
+        if (impactInfo == 'financialdamage'):
+            FinancialDamageValue = value
+            FinancialDamageString = 'Financial Damage'
+            stride_impact_list.append((strideCategory, FinancialDamageString, FinancialDamageValue))
+        if (impactInfo == 'reputationdamage'):
+            ReputationDamageValue = value
+            ReputationDamageString = 'Reputation Damage'
+            stride_impact_list.append((strideCategory, ReputationDamageString, ReputationDamageValue))
+        if (impactInfo == 'privacyviolation'):
+            PrivacyViolationValue = value
+            PrivacyViolationString = 'Privacy Violation'
+            stride_impact_list.append((strideCategory, PrivacyViolationString, PrivacyViolationValue))
 
-    system=System.objects.filter(id=systemId)
-    process=Process.objects.filter(id=processId)
+        count += 1
+        if (count == 4):
+            save = True
+        if (save):
+            strideObject = Stride.objects.get(category=strideCategory)
+            strideImpactRecord = StrideImpactRecord.objects.all().get_or_create(process=process,
+                                                                                stride=strideObject,
+                                                                                financialdamage=FinancialDamageValue,
+                                                                                reputationdamage=ReputationDamageValue,
+                                                                                noncompliance=NonComplianceValue,
+                                                                                privacyviolation=PrivacyViolationValue)
+            save = False
+            count = 0
 
-    TAscores=ThreatAgentRiskScores.objects.filter(system=system)
+    system = System.objects.filter(id=systemId).first()
+    process = Process.objects.filter(id=processId).first()
 
-    try:
-        #ricerca ultimo risultato.
-        maxtimeTA = TAscores[0].updated_at
-        lastScore=TAscores[0]
-        for Tascore in TAscores:
-            if(Tascore.updated_at>maxtimeTA):
-                lastScore=Tascore
-    except:
-        print("error")
+    threat_model = (threat_modeling_per_asset(systemId, processId, assetId))
+    # print(threat_model['threat_model_info'])
+    threats = threat_model['threat_model_info']
 
+
+    TAscores = ThreatAgentRiskScores.objects.filter(system=system)[0]
     SIRecords = StrideImpactRecord.objects.filter(process=process)
 
-    LossOfConfidentiality=0
-    LossOfIntegrity=0
-    LossOfAvailability=0
+    #print(TAscores)
+    #print(SIRecords)
 
+    LossOfConfidentiality = 0
+    LossOfIntegrity = 0
+    LossOfAvailability = 0
+    LossOfAccountability = 0
 
-    for threat in threats:
-        PreCondition=str(threat[0].PreCondition)
-        PostCondition=str(threat[0].PostCondition)
+    for threatwithinfo in threats:
+        threat=threatwithinfo[0]
+        strides=threatwithinfo[1]
+
         maxFinancial = 0
         maxReputation = 0
         maxnoncompliance = 0
         maxprivacy = 0
+
         for SIRecord in SIRecords:
-            for Threatstride in threat[1]:
-                if(SIRecord.stride.category.lower()==Threatstride.lower()):
-                    if(maxFinancial < SIRecord.financialdamage):
-                        maxFinancial=SIRecord.financialdamage
+            for Threatstride in strides:
+                stride=Threatstride.stride.category
+                if (SIRecord.stride.category.lower() == stride.lower()):
+                    if (maxFinancial < SIRecord.financialdamage):
+                        maxFinancial = SIRecord.financialdamage
                     if (maxReputation < SIRecord.reputationdamage):
                         maxReputation = SIRecord.reputationdamage
                     if (maxnoncompliance < SIRecord.noncompliance):
                         maxnoncompliance = SIRecord.noncompliance
                     if (maxprivacy < SIRecord.privacyviolation):
                         maxprivacy = SIRecord.privacyviolation
-        threat[0].financial=maxFinancial
-        threat[0].reputation=maxReputation
-        threat[0].noncompliance=maxnoncompliance
-        threat[0].privacy=maxprivacy
-
-        #elimino [ e ]
 
 
+        LossOfConfidentiality = 5
+
+        LossOfIntegrity = 5
+
+        LossOfAvailability = 5
+
+        LossOfAccountability = 5
+
+        asset=Asset.objects.get(id=assetId)
 
 
+        risk=Risk.objects.get_or_create(system=system, process=process,asset=asset,threat=threat.threat,
+                                   skill= TAscores.skill,motive=TAscores.motive, opportunity=TAscores.opportunity, size=TAscores.size,
+                                   ease_of_discovery=threat.threat.owasp_ease_of_discovery,ease_of_exploit=threat.threat.owasp_ease_of_exploit,intrusion_detection=threat.threat.owasp_intrusion_detection,awareness=threat.threat.owasp_awareness,
+                                   loss_of_confidentiality=LossOfConfidentiality,loss_of_integrity=LossOfIntegrity,loss_of_availability=LossOfAvailability,loss_of_accountability=LossOfAccountability,
+                                   financial=maxFinancial,reputation=maxReputation,non_compliance=maxnoncompliance,privacy=maxprivacy
+                                   )
+        risk_list.append(risk)
 
-        LossOfConfidentiality= 0
+        print(risk_list)
 
-
-        LossOfIntegrity = 0
-
-
-
-        LossOfAvailability = 0
-
-        threat[0].lossofc=LossOfConfidentiality
-        threat[0].lossofi=LossOfIntegrity
-        threat[0].lossofa=LossOfAvailability
-        return render(request, 'risk_analysis.html', {"processName": processName,"ComponentName":SelectedComponentName,"threats":threats,
-                                                  "components":componentsWithThreats,"ThreatAgentScores":lastScore,"systemId": systemId,"processId": processId,
-                                                      "assetId": assetId})
+    return render(request, 'risk_analysis.html', {"processName": process.name, "systemId": systemId, "processId": processId,
+                                                      "assetId": assetId, 'risk_list':risk_list})
 
 
 @csrf_exempt
-def threat_agent_wizard(request,systemId,processId,assetId):
-    context={}
-    #Generate question and related replies
-    questions=ThreatAgentQuestion.objects.all()
-    questions_replies=TAReplies_Question.objects.all()
-    questions_replies_list=[]
+def threat_agent_wizard(request, systemId, processId, assetId):
+    context = {}
+    # Generate question and related replies
+    questions = ThreatAgentQuestion.objects.all()
+    questions_replies = TAReplies_Question.objects.all()
+    questions_replies_list = []
     for question in questions:
         replies = []
         question_replies_dict = {}
         for reply in questions_replies:
-            if question==reply.question:
+            if question == reply.question:
                 replies.append(reply.reply.reply)
-        question_replies_dict['question']=question.question
-        question_replies_dict['replies']=replies
+        question_replies_dict['question'] = question.question
+        question_replies_dict['replies'] = replies
         questions_replies_list.append(question_replies_dict)
-    context['questions_replies']=questions_replies_list
-    context['systemId']=systemId
-    context['processId']=processId
-    context['assetId']=assetId
+    context['questions_replies'] = questions_replies_list
+    context['systemId'] = systemId
+    context['processId'] = processId
+    context['assetId'] = assetId
     return render(request, 'threat_agent_wizard.html', context)
 
+
 @csrf_exempt
-def threat_agent_generation(request, systemId, processId,assetId):
-    context={}
+def threat_agent_generation(request, systemId, processId, assetId):
+    context = {}
 
     ThreatAgents = []
     ThreatAgentsPerAsset = []
-    #for category in ThreatAgentCategory.objects.all():   #inizializzo la lista finale a tutti i TA
-        #ThreatAgents.append(category)
-    for reply in request.POST: #per ogni risposta al questionario
-        if(reply!='csrfmiddlewaretoken'):
-            ReplyObject=Reply.objects.filter(reply=reply).get()
-            tareplycategories=TAReplyCategory.objects.filter(reply=ReplyObject)
-            TAList=[]
-            for replycategory in tareplycategories.all(): #ogni categoria relativa ad una singola risposta
-                #print(replycategory.reply.reply + " "+ replycategory.category.category)
+    # for category in ThreatAgentCategory.objects.all():   #inizializzo la lista finale a tutti i TA
+    # ThreatAgents.append(category)
+    for reply in request.POST:  # per ogni risposta al questionario
+        if (reply != 'csrfmiddlewaretoken'):
+            ReplyObject = Reply.objects.filter(reply=reply).get()
+            tareplycategories = TAReplyCategory.objects.filter(reply=ReplyObject)
+            TAList = []
+            for replycategory in tareplycategories.all():  # ogni categoria relativa ad una singola risposta
+                # print(replycategory.reply.reply + " "+ replycategory.category.category)
                 TAList.append(replycategory.category)
                 question = TAReplies_Question.objects.filter(reply=ReplyObject)
-            ThreatAgentsPerAsset.append((TAList,question))
-    numQ3=0
-    numQ4=0
-    #conto il numero di risposte date per Q3 e Q4
-    for ThreatAgentsList,question in ThreatAgentsPerAsset: #per ogni risposta
-        questionId=question.get().question.Qid
-        if(questionId=="Q3"):
-            numQ3+=1
-        if(questionId=="Q4"):
-            numQ4+=1
+            ThreatAgentsPerAsset.append((TAList, question))
+    numQ3 = 0
+    numQ4 = 0
+    # conto il numero di risposte date per Q3 e Q4
+    for ThreatAgentsList, question in ThreatAgentsPerAsset:  # per ogni risposta
+        questionId = question.get().question.Qid
+        if (questionId == "Q3"):
+            numQ3 += 1
+        if (questionId == "Q4"):
+            numQ4 += 1
 
-    i=0
-    j=0
-    ThreatAgentsListTemp=[]
-    for ThreatAgentsList,question in ThreatAgentsPerAsset: #per ogni risposta
-        questionId=question.get().question.Qid
-        if(int(questionId)==1):
-            ThreatAgents=ThreatAgentsList
-            print(ThreatAgents)
-        if(int(questionId)==2):
-            ThreatAgents=intersection(ThreatAgents,ThreatAgentsList)
-        if(int(questionId)==3):
-            if(i==0):
+    i = 0
+    j = 0
+    ThreatAgentsListTemp = []
+    for ThreatAgentsList, question in ThreatAgentsPerAsset:  # per ogni risposta
+        questionId = question.get().question.Qid
+        if (int(questionId) == 1):
+            ThreatAgents = ThreatAgentsList
+        if (int(questionId) == 2):
+            ThreatAgents = intersection(ThreatAgents, ThreatAgentsList)
+        if (int(questionId) == 3):
+            if (i == 0):
                 ThreatAgentsListTemp = ThreatAgentsList
-            elif(i<numQ3):
-                ThreatAgentsList=union(ThreatAgentsList,ThreatAgentsListTemp)
-                ThreatAgentsListTemp=ThreatAgentsList
-            if(i==numQ3-1):
+            elif (i < numQ3):
+                ThreatAgentsList = union(ThreatAgentsList, ThreatAgentsListTemp)
+                ThreatAgentsListTemp = ThreatAgentsList
+            if (i == numQ3 - 1):
                 ThreatAgents = intersection(ThreatAgents, ThreatAgentsList)
             i = i + 1
 
-        if(int(questionId)==4):
-            if(j==0):
-                ThreatAgentsListTemp=ThreatAgentsList
-                j=j+1
-            elif(j==1):
+        if (int(questionId) == 4):
+            if (j == 0):
                 ThreatAgentsListTemp = ThreatAgentsList
-                j=j+1
-            elif(j<numQ4):
-                ThreatAgentsList=union(ThreatAgentsList,ThreatAgentsListTemp)
-                ThreatAgentsListTemp=ThreatAgentsList
+                j = j + 1
+            elif (j == 1):
+                ThreatAgentsListTemp = ThreatAgentsList
+                j = j + 1
+            elif (j < numQ4):
+                ThreatAgentsList = union(ThreatAgentsList, ThreatAgentsListTemp)
+                ThreatAgentsListTemp = ThreatAgentsList
 
     ThreatAgents = intersection(ThreatAgents, ThreatAgentsList)
-    ThreatAgentsWithInfo={}
+    ThreatAgentsWithInfo = {}
     for ta in ThreatAgents:
-        ThreatAgentsWithInfo[ta]=list(TACategoryAttribute.objects.filter(category=ta))
+        ThreatAgentsWithInfo[ta] = list(TACategoryAttribute.objects.filter(category=ta))
         System_ThreatAgent.objects.get_or_create(
-            system = System.objects.get(id=int(systemId)),
+            system=System.objects.get(id=int(systemId)),
             category=ta
         )
 
-    context={'ThreatAgents':ThreatAgentsWithInfo}
-    context['systemId']=systemId
-    context['processId']=processId
-    context['assetId']=assetId
-    return render(request, 'threat_agent_generation.html',context=context)
+    context = {'ThreatAgents': ThreatAgentsWithInfo}
+    context['systemId'] = systemId
+    context['processId'] = processId
+    context['assetId'] = assetId
+    return render(request, 'threat_agent_generation.html', context=context)
+
 
 def intersection(lst1, lst2):
     lst3 = [value for value in lst1 if value in lst2]
     return lst3
 
+
 def union(lst1, lst2):
-    lst3 = list(set(lst1+lst2))
+    lst3 = list(set(lst1 + lst2))
     return lst3
 
+
 @csrf_exempt
-def calculate_threat_agent_risks(request,systemId,processId,assetId):
+def calculate_threat_agent_risks(request, systemId, processId, assetId):
     OWASP_Motive_TOT = 0
     OWASP_Size_TOT = 0
     OWASP_Opportunity_TOT = 0
     OWASP_Skill_TOT = 0
     sommapesi = 0
 
-    print(request.POST)
-    for category,risk_value in request.POST.items():
-        if(category!='csrfmiddlewaretoken'):
-            TACategory=ThreatAgentCategory.objects.get(category=category)
-            #per ogni categoria ottieni i Attribute relativi e calcola i 4 parametri owasp con le formule nella tesi.
-            TACategoryAttributes=TACategoryAttribute.objects.filter(category=TACategory)
-            OWASP_Motive=0
-            OWASP_Size=0
-            OWASP_Opportunity=0
-            OWASP_Skill=0
-            limits=0
-            intent=0
-            access=0
-            resources=0
-            visibility=0
-            skills=0
+    for category, risk_value in request.POST.items():
+        if (category != 'csrfmiddlewaretoken'):
+            TACategory = ThreatAgentCategory.objects.get(category=category)
+            # per ogni categoria ottieni i Attribute relativi e calcola i 4 parametri owasp con le formule nella tesi.
+            TACategoryAttributes = TACategoryAttribute.objects.filter(category=TACategory)
+            OWASP_Motive = 0
+            OWASP_Size = 0
+            OWASP_Opportunity = 0
+            OWASP_Skill = 0
+            limits = 0
+            intent = 0
+            access = 0
+            resources = 0
+            visibility = 0
+            skills = 0
 
-            OWASP_Motives=[]
+            OWASP_Motives = []
 
-            #scorro gli attributi di category
+            # scorro gli attributi di category
             for TACategoryAttributeVar in TACategoryAttributes:
-                if(TACategoryAttributeVar.attribute.attribute=='Skills'):
-                    skills=TACategoryAttributeVar.attribute.score
-                if(TACategoryAttributeVar.attribute.attribute=='Resources'):
-                    resources=TACategoryAttributeVar.attribute.score
+                if (TACategoryAttributeVar.attribute.attribute == 'Skills'):
+                    skills = TACategoryAttributeVar.attribute.score
+                if (TACategoryAttributeVar.attribute.attribute == 'Resources'):
+                    resources = TACategoryAttributeVar.attribute.score
                 if (TACategoryAttributeVar.attribute.attribute == 'Visibility'):
-                    visibility= TACategoryAttributeVar.attribute.score
+                    visibility = TACategoryAttributeVar.attribute.score
                 if (TACategoryAttributeVar.attribute.attribute == 'Limits'):
-                    limits= TACategoryAttributeVar.attribute.score
+                    limits = TACategoryAttributeVar.attribute.score
                 if (TACategoryAttributeVar.attribute.attribute == 'Intent'):
-                    intent= TACategoryAttributeVar.attribute.score
+                    intent = TACategoryAttributeVar.attribute.score
                 if (TACategoryAttributeVar.attribute.attribute == 'Access'):
-                    access= TACategoryAttributeVar.attribute.score
+                    access = TACategoryAttributeVar.attribute.score
 
-            if(risk_value=='L'):
-                risk_valueNum= 1
+            if (risk_value == 'L'):
+                risk_valueNum = 1
             if (risk_value == 'M'):
                 risk_valueNum = 2
             if (risk_value == 'H'):
                 risk_valueNum = 3
 
-            sommapesi=sommapesi+risk_valueNum
-            OWASP_Motive= ((((intent/2)+(limits/4))/2) * 10)
-            OWASP_Opportunity= ((((access/2)+(resources/6)+(visibility/4))/3) * 10)
-            OWASP_Size= (resources/6) * 10
-            OWASP_Skill= (skills/4) * 10
+            sommapesi = sommapesi + risk_valueNum
+            OWASP_Motive = ((((intent / 2) + (limits / 4)) / 2) * 10)
+            OWASP_Opportunity = ((((access / 2) + (resources / 6) + (visibility / 4)) / 3) * 10)
+            OWASP_Size = (resources / 6) * 10
+            OWASP_Skill = (skills / 4) * 10
 
             OWASP_Motive_TOT += (OWASP_Motive * risk_valueNum)
             OWASP_Opportunity_TOT += OWASP_Opportunity * risk_valueNum
             OWASP_Size_TOT += OWASP_Size * risk_valueNum
             OWASP_Skill_TOT += OWASP_Skill * risk_valueNum
 
-    OWASP_Skill_TOT= int(round(OWASP_Skill_TOT/sommapesi))
-    OWASP_Motive_TOT= int(round(OWASP_Motive_TOT/sommapesi))
-    OWASP_Size_TOT= int(round(OWASP_Size_TOT/sommapesi))
-    OWASP_Opportunity_TOT= int(round(OWASP_Opportunity_TOT/sommapesi))
+    OWASP_Skill_TOT = int(round(OWASP_Skill_TOT / sommapesi))
+    OWASP_Motive_TOT = int(round(OWASP_Motive_TOT / sommapesi))
+    OWASP_Size_TOT = int(round(OWASP_Size_TOT / sommapesi))
+    OWASP_Opportunity_TOT = int(round(OWASP_Opportunity_TOT / sommapesi))
 
-    system=System.objects.get(id=systemId)
-
-    ScoreAlreadyCreated=ThreatAgentRiskScores.objects.filter(system=system)
-    if(not ThreatAgentRiskScores.objects.filter(system=system).exists()):
-        obj=ThreatAgentRiskScores.objects.get_or_create(
-        system=system,
-        skill=OWASP_Skill_TOT,
-        size = OWASP_Size_TOT,
-        motive = OWASP_Motive_TOT,
-        opportunity = OWASP_Opportunity_TOT)
-
-    return render(request, 'stride_impact_evaluation.html', {"systemId": systemId,'processId':processId,"assetId": assetId})
-
-
-
-
-@csrf_exempt
-def stride_impact_evaluation(request,systemId,processId,assetId):
-    stride_impact_list=[]
     system = System.objects.get(id=systemId)
-    if (not StrideImpactRecord.objects.filter(system=system).exists()):
-        save=False
-        count=0
-        for info,value in (request.POST).items():
-            splittedInfo=info.split('_')
-            impactValues=[]
-            stride=splittedInfo[0]
-            impactInfo=splittedInfo[1]
-            if(stride=='spoofing'):
-                strideCategory='Spoofing'
-            if(stride=='tampering'):
-                strideCategory='Tampering'
-            if(stride=='reputation'):
-                strideCategory='Reputation'
-            if(stride=='informationdisclosure'):
-                strideCategory='Information Disclosure'
-            if(stride=='dos'):
-                strideCategory='Denial Of Services'
-            if(stride=='elevationofprivileges'):
-                strideCategory='Elevation of privileges'
 
-            if(impactInfo=='noncompliance'):
-                NonComplianceString='Non Compliance'
-                NonComplianceValue=value
-                stride_impact_list.append((strideCategory,NonComplianceString,NonComplianceValue))
-            if(impactInfo=='financialdamage'):
-                FinancialDamageValue=value
-                FinancialDamageString='Financial Damage'
-                stride_impact_list.append((strideCategory,FinancialDamageString,FinancialDamageValue))
-            if(impactInfo=='reputationdamage'):
-                ReputationDamageValue=value
-                ReputationDamageString='Reputation Damage'
-                stride_impact_list.append((strideCategory,ReputationDamageString,ReputationDamageValue))
-            if(impactInfo=='privacyviolation'):
-                PrivacyViolationValue=value
-                PrivacyViolationString='Privacy Violation'
-                stride_impact_list.append((strideCategory,PrivacyViolationString,PrivacyViolationValue))
+    ScoreAlreadyCreated = ThreatAgentRiskScores.objects.filter(system=system)
+    if (not ThreatAgentRiskScores.objects.filter(system=system).exists()):
+        obj = ThreatAgentRiskScores.objects.get_or_create(
+            system=system,
+            skill=OWASP_Skill_TOT,
+            size=OWASP_Size_TOT,
+            motive=OWASP_Motive_TOT,
+            opportunity=OWASP_Opportunity_TOT)
 
-            count+=1
-            if(count==4):
-                save=True
-            if(save):
-                strideObject = Stride.objects.get(category=strideCategory)
-                strideImpactRecord = StrideImpactRecord.objects.all().get_or_create(system=system,
-                                                        stride=strideObject,
-                                                        financialdamage=FinancialDamageValue,
-                                                        reputationdamage=ReputationDamageValue,
-                                                        noncompliance=NonComplianceValue,
-                                                        privacyviolation=PrivacyViolationValue)
-                save=False
-                count=0
-
-    return render(request, 'threat_modeling.html', { "systemId": systemId,"processId": processId,"assetId": assetId,
-                                                    'stride_impact_list':stride_impact_list})
-
-
-
+    return render(request, 'stride_impact_evaluation.html',
+                  {"systemId": systemId, 'processId': processId, "assetId": assetId})

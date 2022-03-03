@@ -172,7 +172,7 @@ class Stride(models.Model):
     category = models.CharField(max_length=100)
 
 class StrideImpactRecord(models.Model):
-    process = models.ForeignKey(System, on_delete=models.CASCADE,null=True)
+    process = models.ForeignKey(Process, on_delete=models.CASCADE,null=True)
     stride = models.ForeignKey(Stride, on_delete=models.CASCADE,null=True)
     financialdamage = models.IntegerField(null=True)
     reputationdamage = models.IntegerField(null=True)
@@ -181,10 +181,15 @@ class StrideImpactRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
-class Risk(models.Model):
-    system = models.ForeignKey(System, on_delete=models.CASCADE)
-    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, null=True)
+class Threat_Stride(models.Model):
+    stride = models.ForeignKey(Stride, on_delete=models.CASCADE)
     threat = models.ForeignKey(Threat, on_delete=models.CASCADE)
+
+class Risk(models.Model):
+    system = models.ForeignKey(System, on_delete=models.CASCADE, null=True)
+    process=models.ForeignKey(Process, on_delete=models.CASCADE, null=True)
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, null=True)
+    threat = models.ForeignKey(Threat, on_delete=models.CASCADE, null=True)
 
     #Threat Agents
     skill= models.IntegerField(null=True)

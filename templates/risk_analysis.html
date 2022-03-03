@@ -210,8 +210,8 @@ a.tip2:hover span {
 	<div class="panel panel-default">
 		<div class="panel-heading text-center">
 			<span class="lead">
-				<h2>Risks Evaluation
-					({{appName}}) </h2>
+				<h2>Risks Evaluation for
+					({{processName}}) </h2>
 			</span>
 		</div>
 
@@ -221,22 +221,6 @@ a.tip2:hover span {
 
 			<div>
             <p>Select the component you want to calculate the risk:<br><br></p>
-            <form method="POST">
-
-                <select class="form-select" name="dropdown" value="{{ ComponentName }}">
-                          {% for component in components %}
-                              {% if component.1 %}
-                                  <option selected value="{{ component.0.name }}">{{ component.0.name }}</option>
-                              {% else %}
-                                  <option value="{{ component.0.name }}">{{ component.0.name }}</option>
-                              {% endif %}
-
-                            {% endfor %}
-                        </select>
-                <input  type = "submit" value="Select">
-
-
-            </form>
 
 				<p>By following the approach here, it is possible to estimate
 					the severity of all of these risks to the business and make an
@@ -266,7 +250,7 @@ a.tip2:hover span {
 				<br>
                             {% if ComponentName %}
             				<div style="text-align: center;">
-					<button style="text-align: center;" class="btn btn-primary">Save Evaluation for {{ ComponentName }}</button>
+					<button style="text-align: center;" class="btn btn-primary">Save Evaluation for {{ processName }}</button>
 				            </div>
                             {% endif %}
             				<br>
