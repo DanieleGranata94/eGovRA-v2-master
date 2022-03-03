@@ -50,7 +50,7 @@ def bpmn_process_management(request, systemId):
             pk = last_process.pk
             bpmn_graph.load_diagram_from_xml_file(Process.objects.get(pk=pk).xml)
             lista = bpmn_graph.get_nodes()
-            # print(lista)
+            #print(lista)
             annotations = []
             associations = []
 
@@ -816,8 +816,23 @@ def risk_analysis(request, systemId, processId, assetId):
 
         asset=Asset.objects.get(id=assetId)
 
+        threat_strides_obj=Threat_Stride.objects.filter(threat=threat.threat).first()
 
-        risk=Risk.objects.get_or_create(system=system, process=process,asset=asset,threat=threat.threat,
+        """
+        threat_strides_list=Threat_Stride.objects.filter(threat=threat.threat)
+        threat_strides_obj=[]
+        strides_for_threat=[]
+        selectedthreat=""
+        for threat_stride in threat_strides_list:
+            strides_for_threat.append(threat_stride.stride)
+            selectedthreat= threat_stride.threat
+        threat_strides_obj.append((selectedthreat,strides_for_threat))
+        """
+
+
+
+
+        risk=Risk.objects.get_or_create(system=system, process=process,asset=asset,threat_stride=threat_strides_obj,
                                    skill= TAscores.skill,motive=TAscores.motive, opportunity=TAscores.opportunity, size=TAscores.size,
                                    ease_of_discovery=threat.threat.owasp_ease_of_discovery,ease_of_exploit=threat.threat.owasp_ease_of_exploit,intrusion_detection=threat.threat.owasp_intrusion_detection,awareness=threat.threat.owasp_awareness,
                                    loss_of_confidentiality=LossOfConfidentiality,loss_of_integrity=LossOfIntegrity,loss_of_availability=LossOfAvailability,loss_of_accountability=LossOfAccountability,
@@ -825,9 +840,8 @@ def risk_analysis(request, systemId, processId, assetId):
                                    )
         risk_list.append(risk)
 
-        print(risk_list)
 
-    return render(request, 'risk_analysis.html', {"processName": process.name, "systemId": systemId, "processId": processId,
+    return render(request, 'risk_analysis.html', {"assetName": asset, "systemId": systemId, "processId": processId,
                                                       "assetId": assetId, 'risk_list':risk_list})
 
 

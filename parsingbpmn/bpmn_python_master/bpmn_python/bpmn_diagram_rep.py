@@ -117,6 +117,7 @@ class BpmnDiagramGraph(object):
             for node in tmp_nodes:
                 if node[1][consts.Consts.type] == node_type:
                     nodes.append(node)
+            print(nodes)
             return nodes
 
     def get_nodes_list_by_process_id(self, process_id):

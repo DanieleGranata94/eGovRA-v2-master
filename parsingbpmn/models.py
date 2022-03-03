@@ -189,7 +189,7 @@ class Risk(models.Model):
     system = models.ForeignKey(System, on_delete=models.CASCADE, null=True)
     process=models.ForeignKey(Process, on_delete=models.CASCADE, null=True)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, null=True)
-    threat = models.ForeignKey(Threat, on_delete=models.CASCADE, null=True)
+    threat_stride = models.ForeignKey(Threat_Stride, on_delete=models.CASCADE, null=True)
 
     #Threat Agents
     skill= models.IntegerField(null=True)

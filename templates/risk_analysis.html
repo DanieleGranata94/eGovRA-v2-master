@@ -211,10 +211,9 @@ a.tip2:hover span {
 		<div class="panel-heading text-center">
 			<span class="lead">
 				<h2>Risks Evaluation for
-					({{processName}}) </h2>
+					({{assetName}}) </h2>
 			</span>
 		</div>
-
 
 		<div class="panel-body">
 
@@ -248,26 +247,27 @@ a.tip2:hover span {
 					</tr>
 				</table>
 				<br>
-                            {% if ComponentName %}
+                            {% if assetName %}
             				<div style="text-align: center;">
-					<button style="text-align: center;" class="btn btn-primary">Save Evaluation for {{ processName }}</button>
+					<button style="text-align: center;" class="btn btn-primary">Save Evaluation for {{ assetName }}</button>
 				            </div>
                             {% endif %}
             				<br>
 
 				<div>
 					<table style="width: 100%; border: 1px solid grey;">
-                        {% for threat in threats %}
+                        {% for risk in risk_list %}
 						<tr
 							style="border: 1px solid grey;">
 							<td width="20%">
 								<b>Threat: </b>
 								<a class="tip2">
-									{{threat.0.name}}<br>
-									<span>{{threat.0.description}}</span></a>
+									{{risk.0.threat_stride.threat}}<br>
+									<span>{{risk.0.threat_stride.threat.description}}</span></a>
 								<div style="padding: 3px;">
-									{% if threat.1 %}<b>Strides: </b>{% endif %}
-									<p>{% for stride in threat.1 %} {{ stride }}{% if not forloop.last %},{% endif %}{% endfor %}</p>
+									{% if risk.0.threat_stride.stride  %}<b>Stride: </b>{% endif %}
+                                                                {{ risk.0.threat_stride.stride.category }}
+
 								</div>
 							</td>
 							<td align="center"><span
@@ -290,25 +290,25 @@ a.tip2:hover span {
 															Security penetration skills (9), network and programming
 															skills (6), advanced computer user (5), some technical
 															skills (3), no technical skills (1)</span></a></td>
-												<td><input type="number" min="0" max="9" value="{{ ThreatAgentScores.skill }}"
+												<td><input type="number" min="0" max="9" value="{{ risk.0.skill }}"
 													></td>
 												<td><a class="tip">Ease of discovery<span>How
 															easy is it for this group of threat agents to discover
 															this vulnerability? Practically impossible (1), difficult
 															(3), easy (7), automated tools available (9)</span></a></td>
-												<td><input type="number" min="0" max="9"value="{{threat.0.owasp_ease_of_discovery}}">
+												<td><input type="number" min="0" max="9"value="{{ risk.0.ease_of_discovery }}">
 											</tr>
 											<tr>
 												<td><a class="tip">Motive<span>How motivated
 															are the threat agents to find and exploit this
 															vulnerability? Low or no reward (1), possible reward (4),
 															high reward (9)</span></a></td>
-												<td><input type="number" min="0" max="9" value="{{ ThreatAgentScores.motive }}"></td>
+												<td><input type="number" min="0" max="9" value="{{ risk.0.motive }}"></td>
 												<td><a class="tip">Ease of exploit<span>How
 															easy is it for this group of threat agents to actually
 															exploit this vulnerability? Theoretical (1), difficult
 															(3), easy (5), automated tools available (9)</span></a></td>
-												<td><input type="number" min="0" max="9" value="{{threat.0.owasp_ease_of_exploit}}">
+												<td><input type="number" min="0" max="9" value="{{risk.0.ease_of_exploit}}">
 											</tr>
 											<tr>
 												<td><a class="tip">Opportunity<span>What
@@ -318,13 +318,13 @@ a.tip2:hover span {
 															access or resources required (4), some access or
 															resources required (7), no access or resources required
 															(9)</span></a></td>
-												<td><input type="number" min="0" max="9" value="{{ ThreatAgentScores.opportunity }}"
+												<td><input type="number" min="0" max="9" value="{{ risk.0.opportunity }}"
 													></td>
 												<td><a class="tip">Awareness<span>How well
 															known is this vulnerability to this group of threat
 															agents? Unknown (1), hidden (4), obvious (6), public
 															knowledge (9)</span></a></td>
-												<td><input type="number" min="0" max="9" value="{{threat.0.owasp_awareness}}"
+												<td><input type="number" min="0" max="9" value="{{risk.0.awareness}}"
 													></td>
 											</tr>
 											<tr>
@@ -332,13 +332,13 @@ a.tip2:hover span {
 															this group of threat agents? Developers (2), system
 															administrators (2), intranet users (4), partners (5),
 															authenticated users (6), anonymous Internet users (9)</span></a></td>
-												<td><input type="number"min="0" max="9" value="{{ ThreatAgentScores.skill }}"></td>
+												<td><input type="number"min="0" max="9" value="{{ risk.0.skill }}"></td>
 
 												<td><a class="tip">Intrusion detection<span>How
 															likely is an exploit to be detected? Active detection in
 															application (1), logged and reviewed (3), logged without
 															review (8), not logged (9)</span></a></td>
-												<td><input type="number" min="0" max="9" value="{{threat.0.owasp_intrusion_detection}}">
+												<td><input type="number" min="0" max="9" value="{{risk.0.intrusion_detection}}">
 											</tr>
 
 										</table></td>
@@ -361,13 +361,13 @@ a.tip2:hover span {
 															critical data disclosed (6), extensive non-sensitive data
 															disclosed (6), extensive critical data disclosed (7), all
 															data disclosed (9)</span></a></td>
-												<td><input type="number" min="0" max="9" value="{{ threat.0.lossofc }}" ></td>
+												<td><input type="number" min="0" max="9" value="{{ risk.0.loss_of_confidentiality }}" ></td>
 												<td><a class="tip">Financial damage<span>How
 															much financial damage will result from an exploit? Less
 															than the cost to fix the vulnerability (1), minor effect
 															on annual profit (3), significant effect on annual profit
 															(7), bankruptcy (9)</span></a></td>
-												<td><input type="number" min="0" max="9" value="{{ threat.0.financial }}"></td>
+												<td><input type="number" min="0" max="9" value="{{ risk.0.financial }}"></td>
 											</tr>
 											<tr>
 												<td><a class="tip">Loss of integrity<span>How
@@ -376,12 +376,12 @@ a.tip2:hover span {
 															corrupt data (3), extensive slightly corrupt data (5),
 															extensive seriously corrupt data (7), all data totally
 															corrupt (9)</span></a></td>
-												<td><input type="number" min="0" max="9" value="{{ threat.0.lossofi }}"></td>
+												<td><input type="number" min="0" max="9" value="{{ risk.0.loss_of_integrity }}"></td>
 												<td><a class="tip">Reputation damage<span>Would
 															an exploit result in reputation damage that would harm
 															the business? Minimal damage (1), Loss of major accounts
 															(4), loss of goodwill (5), brand damage (9)</span></a></td>
-												<td><input type="number"min="0" max="9" value="{{ threat.0.reputation }}"></td>
+												<td><input type="number"min="0" max="9" value="{{ risk.0.reputation }}"></td>
 											</tr>
 											<tr>
 												<td><a class="tip">Loss of availability<span>How
@@ -390,12 +390,12 @@ a.tip2:hover span {
 															services interrupted (5), extensive secondary services
 															interrupted (5), extensive primary services interrupted
 															(7), all services completely lost (9)</span></a></td>
-												<td><input type="number" min="0" max="9" value="{{ threat.0.lossofa }}"></td>
+												<td><input type="number" min="0" max="9" value="{{ risk.0.loss_of_availability }}"></td>
 												<td><a class="tip">Non-compliance<span>How
 															much exposure does non-compliance introduce? Minor
 															violation (2), clear violation (5), high profile
 															violation (7)</span></a></td>
-												<td><input type="number"min="0" max="9" value="{{ threat.0.noncompliance }}"></td>
+												<td><input type="number"min="0" max="9" value="{{ risk.0.non_compliance }}"></td>
 											</tr>
 											<tr>
 												<td><a class="tip">Loss of accountability<span>Are
@@ -403,13 +403,13 @@ a.tip2:hover span {
 															Fully traceable (1), possibly traceable (7), completely
 															anonymous (9)</span></a></td>
 												<td><input type="number" min="0" max="9"
-													value="0" ></td>
+													value="{{ risk.0.loss_of_accountability }}" ></td>
 												<td><a class="tip">Privacy violation<span>How
 															much personally identifiable information could be
 															disclosed? One individual (3), hundreds of people (5),
 															thousands of people (7), millions of people (9)</span></a></td>
 												<td><input type="number" min="0" max="9"
-													value="{{ threat.0.privacy }}"></td>
+													value="{{ risk.0.privacy }}"></td>
 
 											</tr>
 
