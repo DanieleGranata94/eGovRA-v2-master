@@ -13,7 +13,7 @@ from .forms import ProcessForm, SystemForm
 from .models import Process, Asset, System, Asset_has_attribute, Attribute, Asset_type, Attribute_value, \
     Threat_has_attribute, Threat_has_control, ThreatAgentRiskScores, TACategoryAttribute, ThreatAgentCategory, \
     System_ThreatAgent, TAReplies_Question, TAReplyCategory, Reply, ThreatAgentQuestion, StrideImpactRecord, Stride, \
-    Threat_Stride, Risk
+    Threat_Stride, Risk, OverallRisk
 from .bpmn_python_master.bpmn_python import bpmn_diagram_rep as diagram
 
 
@@ -34,8 +34,6 @@ def system_management(request):
     })
 
 
-
-
 def bpmn_process_management(request, systemId):
     pk = systemId
     asset_type = None
@@ -50,7 +48,7 @@ def bpmn_process_management(request, systemId):
             pk = last_process.pk
             bpmn_graph.load_diagram_from_xml_file(Process.objects.get(pk=pk).xml)
             lista = bpmn_graph.get_nodes()
-            #print(lista)
+            # print(lista)
             annotations = []
             associations = []
 
@@ -79,7 +77,7 @@ def bpmn_process_management(request, systemId):
                             y = dizionario["y"]
                             width = dizionario["width"]
                             height = dizionario["height"]
-                            asset_type=None
+                            asset_type = None
                             position = x + ":" + y + ":" + width + ":" + height
                             if dizionario['type'].startswith("send"):
                                 asset_type = Asset_type.objects.get(name="Send task")
@@ -498,10 +496,49 @@ def threat_modeling(systemId, processId):
     return context
 
 
+def threat_modeling_results(systemId, processId):
+    assets = Asset.objects.filter(process=Process.objects.get(pk=processId))
+    attributes = []
+    threats = []
+    controls = []
+    for asset in assets:
+        attributes.append(Asset_has_attribute.objects.filter(asset=asset))
+    for list_attribute in attributes:
+        for attribute in list_attribute:
+            attribute = attribute.attribute
+            threats.append(Threat_has_attribute.objects.filter(attribute=attribute))
+    for threats_of_asset in threats:
+        sublist_controls = []
+        for threat in threats_of_asset:
+            threat = threat.threat
+            sublist_controls.append(Threat_has_control.objects.filter(threat=threat))
+        controls.append(sublist_controls)
+
+    controls_per_asset = []
+    for asset in threats:
+        list_controls = []
+        for threat in asset:
+            threat = threat.threat
+            controls_per_threat = Threat_has_control.objects.filter(threat=threat)
+            for control in controls_per_threat:
+                control = control.control
+                if control not in list_controls:
+                    list_controls.append(control)
+        controls_per_asset.append(list_controls)
+
+    threat_model_info = zip(assets, threats)
+    system = Process.objects.get(pk=processId).system
+    processes = Process.objects.filter(system=system)
+    context = {
+        'threat_model_info': threat_model_info, 'systemId': systemId, 'processId': processId, 'processes': processes
+    }
+    return context
+
+
 def threat_modeling_per_asset(systemId, processId, assetId):
     attributes = []
     threats_with_strides = []
-    #attributi dell'asset
+    # attributi dell'asset
     attributes.append(Asset_has_attribute.objects.filter(asset=Asset.objects.get(id=assetId)))
 
     for list_attribute in attributes:
@@ -509,9 +546,8 @@ def threat_modeling_per_asset(systemId, processId, assetId):
             attribute = attribute.attribute
             threats = Threat_has_attribute.objects.filter(attribute=attribute)
             for threat in threats:
-                strides=Threat_Stride.objects.filter(threat=threat.threat)
-                threats_with_strides.append((threat,strides))
-
+                strides = Threat_Stride.objects.filter(threat=threat.threat)
+                threats_with_strides.append((threat, strides))
 
     threat_model_info = threats_with_strides
     context = {
@@ -522,6 +558,17 @@ def threat_modeling_per_asset(systemId, processId, assetId):
 
 def threat_modeling_view(request, systemId, processId):
     context = threat_modeling(systemId, processId)
+    result_available = False
+
+    try:
+        if (ThreatAgentRiskScores.objects.get(
+                system=System.objects.get(id=systemId)) and StrideImpactRecord.objects.filter(
+                process=Process.objects.get(id=processId))):
+            result_available = True
+    except:
+        result_available = False
+    context['result_available'] = result_available
+
     return render(request, 'threat_modeling.html', context)
 
 
@@ -709,10 +756,10 @@ def bpmn_viewer(request, pk):
 @csrf_exempt
 def risk_analysis(request, systemId, processId, assetId):
     stride_impact_list = []
-    risk_list=[]
+    risk_list = []
     process = Process.objects.get(id=processId)
     # delete all StrideImpactRecord related to process
-    StrideImpactRecord.objects.filter(process=process).delete()
+    # StrideImpactRecord.objects.filter(process=process).delete()
 
     save = False
     count = 0
@@ -771,21 +818,34 @@ def risk_analysis(request, systemId, processId, assetId):
     # print(threat_model['threat_model_info'])
     threats = threat_model['threat_model_info']
 
-
     TAscores = ThreatAgentRiskScores.objects.filter(system=system)[0]
     SIRecords = StrideImpactRecord.objects.filter(process=process)
 
-    #print(TAscores)
-    #print(SIRecords)
+    # print(TAscores)
+    # print(SIRecords)
 
     LossOfConfidentiality = 0
     LossOfIntegrity = 0
     LossOfAvailability = 0
     LossOfAccountability = 0
 
+    SpoofingRiskCount = 1
+    TamperingRiskCount = 1
+    RepudiationRiskCount = 1
+    InformationDisclosureRiskCount = 1
+    DoSRiskCount = 1
+    EoPRiskCount = 1
+
+    SpoofingRisk = 0
+    TamperingRisk = 0
+    RepudiationRisk = 0
+    InformationDisclosureRisk = 0
+    DoSRisk = 0
+    EoPRisk = 0
+
     for threatwithinfo in threats:
-        threat=threatwithinfo[0]
-        strides=threatwithinfo[1]
+        threat = threatwithinfo[0]
+        strides = threatwithinfo[1]
 
         maxFinancial = 0
         maxReputation = 0
@@ -794,7 +854,7 @@ def risk_analysis(request, systemId, processId, assetId):
 
         for SIRecord in SIRecords:
             for Threatstride in strides:
-                stride=Threatstride.stride.category
+                stride = Threatstride.stride.category
                 if (SIRecord.stride.category.lower() == stride.lower()):
                     if (maxFinancial < SIRecord.financialdamage):
                         maxFinancial = SIRecord.financialdamage
@@ -805,7 +865,6 @@ def risk_analysis(request, systemId, processId, assetId):
                     if (maxprivacy < SIRecord.privacyviolation):
                         maxprivacy = SIRecord.privacyviolation
 
-
         LossOfConfidentiality = 5
 
         LossOfIntegrity = 5
@@ -814,9 +873,9 @@ def risk_analysis(request, systemId, processId, assetId):
 
         LossOfAccountability = 5
 
-        asset=Asset.objects.get(id=assetId)
+        asset = Asset.objects.get(id=assetId)
 
-        threat_strides_obj=Threat_Stride.objects.filter(threat=threat.threat).first()
+        threat_strides_obj = Threat_Stride.objects.filter(threat=threat.threat).first()
 
         """
         threat_strides_list=Threat_Stride.objects.filter(threat=threat.threat)
@@ -828,21 +887,143 @@ def risk_analysis(request, systemId, processId, assetId):
             selectedthreat= threat_stride.threat
         threat_strides_obj.append((selectedthreat,strides_for_threat))
         """
+        likelihood = 5
+        impact = 5
 
+        likelihood = int(
+            TAscores.skill + TAscores.motive + TAscores.opportunity + TAscores.size + threat.threat.owasp_ease_of_discovery + threat.threat.owasp_ease_of_exploit + threat.threat.owasp_intrusion_detection +
+            threat.threat.owasp_awareness) / 8
 
+        impact = int(
+            threat.threat.loss_of_confidentiality + threat.threat.loss_of_integrity + threat.threat.loss_of_availability + threat.threat.loss_of_accountability + maxFinancial + maxReputation + maxnoncompliance + maxprivacy) / 8
 
+        severity = "MEDIUM"
 
-        risk=Risk.objects.get_or_create(system=system, process=process,asset=asset,threat_stride=threat_strides_obj,
-                                   skill= TAscores.skill,motive=TAscores.motive, opportunity=TAscores.opportunity, size=TAscores.size,
-                                   ease_of_discovery=threat.threat.owasp_ease_of_discovery,ease_of_exploit=threat.threat.owasp_ease_of_exploit,intrusion_detection=threat.threat.owasp_intrusion_detection,awareness=threat.threat.owasp_awareness,
-                                   loss_of_confidentiality=LossOfConfidentiality,loss_of_integrity=LossOfIntegrity,loss_of_availability=LossOfAvailability,loss_of_accountability=LossOfAccountability,
-                                   financial=maxFinancial,reputation=maxReputation,non_compliance=maxnoncompliance,privacy=maxprivacy
-                                   )
+        severity = calculate_severity(likelihood, impact)
+
+        if (threat_strides_obj.stride.category.lower() == "spoofing"):
+            SpoofingRiskCount = SpoofingRiskCount + 1
+            if (severity == "VERY LOW"):
+                SpoofingRisk = SpoofingRisk + 2
+            if (severity == "LOW"):
+                SpoofingRisk = SpoofingRisk + 4
+            if (severity == "MEDIUM"):
+                SpoofingRisk = SpoofingRisk + 6
+            if (severity == "HIGH"):
+                SpoofingRisk = SpoofingRisk + 8
+            if (severity == "CRITICAL"):
+                SpoofingRisk = SpoofingRisk + 10
+
+        if (threat_strides_obj.stride.category.lower() == "tampering"):
+            TamperingRiskCount = TamperingRiskCount + 1
+            if (severity == "VERY LOW"):
+                TamperingRisk = TamperingRisk + 2
+            if (severity == "LOW"):
+                TamperingRisk = TamperingRisk + 4
+            if (severity == "MEDIUM"):
+                TamperingRisk = TamperingRisk + 6
+            if (severity == "HIGH"):
+                TamperingRisk = TamperingRisk + 8
+            if (severity == "CRITICAL"):
+                TamperingRisk = TamperingRisk + 10
+
+        if (threat_strides_obj.stride.category.lower() == "repudiation"):
+            RepudiationRiskCount = RepudiationRiskCount + 1
+            if (severity == "VERY LOW"):
+                RepudiationRisk = RepudiationRisk + 2
+            if (severity == "LOW"):
+                RepudiationRisk = RepudiationRisk + 4
+            if (severity == "MEDIUM"):
+                RepudiationRisk = RepudiationRisk + 6
+            if (severity == "HIGH"):
+                RepudiationRisk = RepudiationRisk + 8
+            if (severity == "CRITICAL"):
+                RepudiationRisk = RepudiationRisk + 10
+
+        if (threat_strides_obj.stride.category.lower() == "information disclosure"):
+            InformationDisclosureRiskCount = InformationDisclosureRiskCount + 1
+            if (severity == "VERY LOW"):
+                InformationDisclosureRisk = InformationDisclosureRisk + 2
+            if (severity == "LOW"):
+                InformationDisclosureRisk = InformationDisclosureRisk + 4
+            if (severity == "MEDIUM"):
+                InformationDisclosureRisk = InformationDisclosureRisk + 6
+            if (severity == "HIGH"):
+                InformationDisclosureRisk = InformationDisclosureRisk + 8
+            if (severity == "CRITICAL"):
+                InformationDisclosureRisk = InformationDisclosureRisk + 10
+
+        if (threat_strides_obj.stride.category.lower() == "denial of services"):
+            DoSRiskCount = DoSRiskCount + 1
+            if (severity == "VERY LOW"):
+                DoSRisk = DoSRisk + 2
+            if (severity == "LOW"):
+                DoSRisk = DoSRisk + 4
+            if (severity == "MEDIUM"):
+                DoSRisk = DoSRisk + 6
+            if (severity == "HIGH"):
+                DoSRisk = DoSRisk + 8
+            if (severity == "CRITICAL"):
+                DoSRisk = DoSRisk + 10
+
+        if (threat_strides_obj.stride.category.lower() == "elevation of privilege"):
+            EoPRiskCount = EoPRiskCount + 1
+            if (severity == "VERY LOW"):
+                EoPRisk = EoPRisk + 2
+            if (severity == "LOW"):
+                EoPRisk = EoPRisk + 4
+            if (severity == "MEDIUM"):
+                EoPRisk = EoPRisk + 6
+            if (severity == "HIGH"):
+                EoPRisk = EoPRisk + 8
+            if (severity == "CRITICAL"):
+                EoPRisk = EoPRisk + 10
+
+        risk = Risk.objects.get_or_create(system=system, process=process, asset=asset, threat_stride=threat_strides_obj,
+                                          likelihood=likelihood, impact=impact, severity=severity,
+                                          skill=TAscores.skill, motive=TAscores.motive,
+                                          opportunity=TAscores.opportunity, size=TAscores.size,
+                                          ease_of_discovery=threat.threat.owasp_ease_of_discovery,
+                                          ease_of_exploit=threat.threat.owasp_ease_of_exploit,
+                                          intrusion_detection=threat.threat.owasp_intrusion_detection,
+                                          awareness=threat.threat.owasp_awareness,
+                                          loss_of_confidentiality=threat.threat.loss_of_confidentiality,
+                                          loss_of_integrity=threat.threat.loss_of_integrity,
+                                          loss_of_availability=threat.threat.loss_of_availability,
+                                          loss_of_accountability=threat.threat.loss_of_accountability,
+                                          financial=maxFinancial, reputation=maxReputation,
+                                          non_compliance=maxnoncompliance, privacy=maxprivacy
+                                          )
         risk_list.append(risk)
 
+    SpoofingRiskTot = int(SpoofingRisk / SpoofingRiskCount)
+    TamperingRiskTot = int(TamperingRisk / TamperingRiskCount)
+    RepudiationRiskTot = int(RepudiationRisk / RepudiationRiskCount)
+    InformationDisclosureRiskTot = int(InformationDisclosureRisk / InformationDisclosureRiskCount)
+    DoSRiskTot = int(DoSRisk / DoSRiskCount)
+    EoPRiskTot = int(EoPRisk / EoPRiskCount)
+
+    SpoofingOverallRiskString = calculate_severity_per_stride(SpoofingRiskTot)
+    TamperingOverallRiskString = calculate_severity_per_stride(TamperingRiskTot)
+    RepOverallRiskString = calculate_severity_per_stride(RepudiationRiskTot)
+    InfOverallRiskString = calculate_severity_per_stride(InformationDisclosureRiskTot)
+    DoSOverallRiskString = calculate_severity_per_stride(DoSRiskTot)
+    EoPOverallRiskString = calculate_severity_per_stride(EoPRiskTot)
+
+    OverallRisk.objects.get_or_create(spoofing=SpoofingOverallRiskString, tampering=TamperingOverallRiskString,
+                                      repudiation=RepOverallRiskString, information=InfOverallRiskString,
+                                      dos=DoSOverallRiskString, eop=EoPOverallRiskString, system=system,
+                                      process=process, asset=asset)
+
+    # risk_list.sort(key=lambda x: (x.likelihood + x.impact) /2, reverse=True)
 
     return render(request, 'risk_analysis.html', {"assetName": asset, "systemId": systemId, "processId": processId,
-                                                      "assetId": assetId, 'risk_list':risk_list})
+                                                  "assetId": assetId, 'risk_list': risk_list,
+                                                  'spoofing': SpoofingOverallRiskString,
+                                                  'tampering': TamperingOverallRiskString,
+                                                  'repudiation': RepOverallRiskString,
+                                                  'informationdis': InfOverallRiskString,
+                                                  'dos': DoSOverallRiskString, 'eop': EoPOverallRiskString})
 
 
 @csrf_exempt
@@ -865,7 +1046,54 @@ def threat_agent_wizard(request, systemId, processId, assetId):
     context['systemId'] = systemId
     context['processId'] = processId
     context['assetId'] = assetId
+
+    try:
+        if ThreatAgentRiskScores.objects.get(system=System.objects.get(id=systemId)):
+            return redirect('StrideImpact', systemId, processId, assetId)
+    except:
+        pass
     return render(request, 'threat_agent_wizard.html', context)
+
+
+def calculate_severity(likelihood, impact):
+    severity = "MEDIUM"
+    if (impact >= 6):
+        if (likelihood < 3):
+            severity = "MEDIUM"
+        elif (likelihood >= 3 and likelihood < 6):
+            severity = "HIGH"
+        elif (likelihood > 6):
+            severity = "CRITICAL"
+    elif (impact >= 3 and impact < 6):
+        if (likelihood < 3):
+            severity = "LOW"
+        elif (likelihood >= 3 and likelihood < 6):
+            severity = "MEDIUM"
+        elif (likelihood >= 6):
+            severity = "HIGH"
+    elif (impact < 3):
+        if (likelihood < 3):
+            severity = "VERY LOW"
+        elif (likelihood >= 3 and likelihood < 6):
+            severity = "LOW"
+        elif (likelihood >= 6):
+            severity = "MEDIUM"
+    return severity
+
+
+def calculate_severity_per_stride(risk_per_stride):
+    severity = "MEDIUM"
+    if (risk_per_stride < 3):
+        severity = "VERY LOW"
+    if (risk_per_stride >= 3 and risk_per_stride < 5):
+        severity = "LOW"
+    elif (risk_per_stride >= 5 and risk_per_stride < 7):
+        severity = "MEDIUM"
+    elif (risk_per_stride >= 7 and risk_per_stride < 9):
+        severity = "HIGH"
+    elif (risk_per_stride >= 9):
+        severity = "CRITICAL"
+    return severity
 
 
 @csrf_exempt
@@ -934,7 +1162,6 @@ def threat_agent_generation(request, systemId, processId, assetId):
             system=System.objects.get(id=int(systemId)),
             category=ta
         )
-
     context = {'ThreatAgents': ThreatAgentsWithInfo}
     context['systemId'] = systemId
     context['processId'] = processId
@@ -1027,5 +1254,289 @@ def calculate_threat_agent_risks(request, systemId, processId, assetId):
             motive=OWASP_Motive_TOT,
             opportunity=OWASP_Opportunity_TOT)
 
+    if (StrideImpactRecord.objects.filter(process=Process.objects.get(id=processId))):
+        return redirect('risk_analysis', systemId, processId, assetId)
+
+    if (assetId is None):
+        return redirect('risk_analysis_results', systemId, processId, assetId)
+
     return render(request, 'stride_impact_evaluation.html',
                   {"systemId": systemId, 'processId': processId, "assetId": assetId})
+
+
+def StrideImpact(request, systemId, processId, assetId):
+    if (StrideImpactRecord.objects.filter(process=Process.objects.get(id=processId))):
+        return redirect('risk_analysis', systemId, processId, assetId)
+    return render(request, 'stride_impact_evaluation.html',
+                  {"systemId": systemId, 'processId': processId, "assetId": assetId})
+
+
+def StrideImpact_Result(request, systemId, processId):
+    if (StrideImpactRecord.objects.filter(process=Process.objects.get(id=processId))):
+        return redirect('risk_analysis_result', systemId, processId)
+    return render(request, 'stride_impact_evaluation_result.html',
+                  {"systemId": systemId, 'processId': processId})
+
+
+@csrf_exempt
+def risk_analysis_result(request, systemId, processId):
+    system = System.objects.filter(id=systemId).first()
+    process = Process.objects.filter(id=processId).first()
+    assets = Asset.objects.filter(process=process)
+
+    if (not ThreatAgentRiskScores.objects.get(system=System.objects.get(id=systemId))):
+        return redirect('threat_agent_wizard', systemId, processId, assets[0].id)
+
+    if (not StrideImpactRecord.objects.filter(process=Process.objects.get(id=processId))):
+        return redirect('StrideImpact_Result', systemId, processId)
+
+    SpoofingRisks = []
+    TamperingRisks = []
+    RepudiationRisks = []
+    InformationDisclosureRisks = []
+    DoSRisks = []
+    EoPRisks = []
+
+    for asset in assets:
+        threat_model = (threat_modeling_per_asset(systemId, processId, asset.id))
+        # print(threat_model['threat_model_info'])
+        threats = threat_model['threat_model_info']
+
+        TAscores = ThreatAgentRiskScores.objects.filter(system=system)[0]
+        SIRecords = StrideImpactRecord.objects.filter(process=process)
+
+        # print(TAscores)
+        # print(SIRecords)
+
+        LossOfConfidentiality = 0
+        LossOfIntegrity = 0
+        LossOfAvailability = 0
+        LossOfAccountability = 0
+
+        SpoofingRiskCount = 1
+        TamperingRiskCount = 1
+        RepudiationRiskCount = 1
+        InformationDisclosureRiskCount = 1
+        DoSRiskCount = 1
+        EoPRiskCount = 1
+
+        SpoofingRisk = 0
+        TamperingRisk = 0
+        RepudiationRisk = 0
+        InformationDisclosureRisk = 0
+        DoSRisk = 0
+        EoPRisk = 0
+
+        for threatwithinfo in threats:
+            threat = threatwithinfo[0]
+            strides = threatwithinfo[1]
+
+            maxFinancial = 0
+            maxReputation = 0
+            maxnoncompliance = 0
+            maxprivacy = 0
+
+            for SIRecord in SIRecords:
+                for Threatstride in strides:
+                    stride = Threatstride.stride.category
+                    if (SIRecord.stride.category.lower() == stride.lower()):
+                        if (maxFinancial < SIRecord.financialdamage):
+                            maxFinancial = SIRecord.financialdamage
+                        if (maxReputation < SIRecord.reputationdamage):
+                            maxReputation = SIRecord.reputationdamage
+                        if (maxnoncompliance < SIRecord.noncompliance):
+                            maxnoncompliance = SIRecord.noncompliance
+                        if (maxprivacy < SIRecord.privacyviolation):
+                            maxprivacy = SIRecord.privacyviolation
+
+            LossOfConfidentiality = 5
+
+            LossOfIntegrity = 5
+
+            LossOfAvailability = 5
+
+            LossOfAccountability = 5
+
+            threat_strides_obj = Threat_Stride.objects.filter(threat=threat.threat).first()
+
+            """
+            threat_strides_list=Threat_Stride.objects.filter(threat=threat.threat)
+            threat_strides_obj=[]
+            strides_for_threat=[]
+            selectedthreat=""
+            for threat_stride in threat_strides_list:
+                strides_for_threat.append(threat_stride.stride)
+                selectedthreat= threat_stride.threat
+            threat_strides_obj.append((selectedthreat,strides_for_threat))
+            """
+            likelihood = 5
+            impact = 5
+
+            likelihood = int(
+                TAscores.skill + TAscores.motive + TAscores.opportunity + TAscores.size + threat.threat.owasp_ease_of_discovery + threat.threat.owasp_ease_of_exploit + threat.threat.owasp_intrusion_detection +
+                threat.threat.owasp_awareness) / 8
+
+            impact = int(
+                threat.threat.loss_of_confidentiality + threat.threat.loss_of_integrity + threat.threat.loss_of_availability + threat.threat.loss_of_accountability + maxFinancial + maxReputation + maxnoncompliance + maxprivacy) / 8
+
+            severity = "MEDIUM"
+
+            severity = calculate_severity(likelihood, impact)
+
+            if (threat_strides_obj.stride.category.lower() == "spoofing"):
+                SpoofingRiskCount = SpoofingRiskCount + 1
+                if (severity == "VERY LOW"):
+                    SpoofingRisk = SpoofingRisk + 2
+                if (severity == "LOW"):
+                    SpoofingRisk = SpoofingRisk + 4
+                if (severity == "MEDIUM"):
+                    SpoofingRisk = SpoofingRisk + 6
+                if (severity == "HIGH"):
+                    SpoofingRisk = SpoofingRisk + 8
+                if (severity == "CRITICAL"):
+                    SpoofingRisk = SpoofingRisk + 10
+
+            if (threat_strides_obj.stride.category.lower() == "tampering"):
+                TamperingRiskCount = TamperingRiskCount + 1
+                if (severity == "VERY LOW"):
+                    TamperingRisk = TamperingRisk + 2
+                if (severity == "LOW"):
+                    TamperingRisk = TamperingRisk + 4
+                if (severity == "MEDIUM"):
+                    TamperingRisk = TamperingRisk + 6
+                if (severity == "HIGH"):
+                    TamperingRisk = TamperingRisk + 8
+                if (severity == "CRITICAL"):
+                    TamperingRisk = TamperingRisk + 10
+
+            if (threat_strides_obj.stride.category.lower() == "repudiation"):
+                RepudiationRiskCount = RepudiationRiskCount + 1
+                if (severity == "VERY LOW"):
+                    RepudiationRisk = RepudiationRisk + 2
+                if (severity == "LOW"):
+                    RepudiationRisk = RepudiationRisk + 4
+                if (severity == "MEDIUM"):
+                    RepudiationRisk = RepudiationRisk + 6
+                if (severity == "HIGH"):
+                    RepudiationRisk = RepudiationRisk + 8
+                if (severity == "CRITICAL"):
+                    RepudiationRisk = RepudiationRisk + 10
+
+            if (threat_strides_obj.stride.category.lower() == "information disclosure"):
+                InformationDisclosureRiskCount = InformationDisclosureRiskCount + 1
+                if (severity == "VERY LOW"):
+                    InformationDisclosureRisk = InformationDisclosureRisk + 2
+                if (severity == "LOW"):
+                    InformationDisclosureRisk = InformationDisclosureRisk + 4
+                if (severity == "MEDIUM"):
+                    InformationDisclosureRisk = InformationDisclosureRisk + 6
+                if (severity == "HIGH"):
+                    InformationDisclosureRisk = InformationDisclosureRisk + 8
+                if (severity == "CRITICAL"):
+                    InformationDisclosureRisk = InformationDisclosureRisk + 10
+
+            if (threat_strides_obj.stride.category.lower() == "denial of services"):
+                DoSRiskCount = DoSRiskCount + 1
+                if (severity == "VERY LOW"):
+                    DoSRisk = DoSRisk + 2
+                if (severity == "LOW"):
+                    DoSRisk = DoSRisk + 4
+                if (severity == "MEDIUM"):
+                    DoSRisk = DoSRisk + 6
+                if (severity == "HIGH"):
+                    DoSRisk = DoSRisk + 8
+                if (severity == "CRITICAL"):
+                    DoSRisk = DoSRisk + 10
+
+            if (threat_strides_obj.stride.category.lower() == "elevation of privilege"):
+                EoPRiskCount = EoPRiskCount + 1
+                if (severity == "VERY LOW"):
+                    EoPRisk = EoPRisk + 2
+                if (severity == "LOW"):
+                    EoPRisk = EoPRisk + 4
+                if (severity == "MEDIUM"):
+                    EoPRisk = EoPRisk + 6
+                if (severity == "HIGH"):
+                    EoPRisk = EoPRisk + 8
+                if (severity == "CRITICAL"):
+                    EoPRisk = EoPRisk + 10
+
+            risk = Risk.objects.get_or_create(system=system, process=process, asset=asset,
+                                              threat_stride=threat_strides_obj,
+                                              likelihood=likelihood, impact=impact, severity=severity,
+                                              skill=TAscores.skill, motive=TAscores.motive,
+                                              opportunity=TAscores.opportunity, size=TAscores.size,
+                                              ease_of_discovery=threat.threat.owasp_ease_of_discovery,
+                                              ease_of_exploit=threat.threat.owasp_ease_of_exploit,
+                                              intrusion_detection=threat.threat.owasp_intrusion_detection,
+                                              awareness=threat.threat.owasp_awareness,
+                                              loss_of_confidentiality=threat.threat.loss_of_confidentiality,
+                                              loss_of_integrity=threat.threat.loss_of_integrity,
+                                              loss_of_availability=threat.threat.loss_of_availability,
+                                              loss_of_accountability=threat.threat.loss_of_accountability,
+                                              financial=maxFinancial, reputation=maxReputation,
+                                              non_compliance=maxnoncompliance, privacy=maxprivacy
+                                              )
+
+        SpoofingRiskTot = int(SpoofingRisk / SpoofingRiskCount)
+        SpoofingRisks.append(SpoofingRiskTot)
+        TamperingRiskTot = int(TamperingRisk / TamperingRiskCount)
+        TamperingRisks.append(TamperingRiskTot)
+        RepudiationRiskTot = int(RepudiationRisk / RepudiationRiskCount)
+        RepudiationRisks.append(RepudiationRiskTot)
+        InformationDisclosureRiskTot = int(InformationDisclosureRisk / InformationDisclosureRiskCount)
+        InformationDisclosureRisks.append(InformationDisclosureRiskTot)
+        DoSRiskTot = int(DoSRisk / DoSRiskCount)
+        DoSRisks.append(DoSRiskTot)
+        EoPRiskTot = int(EoPRisk / EoPRiskCount)
+        EoPRisks.append(EoPRiskTot)
+
+        SpoofingOverallRiskString = calculate_severity_per_stride(SpoofingRiskTot)
+        TamperingOverallRiskString = calculate_severity_per_stride(TamperingRiskTot)
+        RepOverallRiskString = calculate_severity_per_stride(RepudiationRiskTot)
+        InfOverallRiskString = calculate_severity_per_stride(InformationDisclosureRiskTot)
+        DoSOverallRiskString = calculate_severity_per_stride(DoSRiskTot)
+        EoPOverallRiskString = calculate_severity_per_stride(EoPRiskTot)
+
+        OverallRisk.objects.get_or_create(spoofing=SpoofingOverallRiskString, tampering=TamperingOverallRiskString,
+                                          repudiation=RepOverallRiskString, information=InfOverallRiskString,
+                                          dos=DoSOverallRiskString, eop=EoPOverallRiskString, asset=asset,
+                                          process=process, system=system)
+
+        maxSpoofing = SpoofingRisks[0]
+        maxTampering = TamperingRisks[0]
+        maxRep = RepudiationRisks[0]
+        maxInf = InformationDisclosureRisks[0]
+        maxDoS = DoSRisks[0]
+        maxEoP = EoPRisks[0]
+
+        for i in range(len(SpoofingRisks)):
+            if(SpoofingRisks[i]>=maxSpoofing):
+                maxSpoofing=SpoofingRisks[i]
+            if (TamperingRisks[i] >= maxTampering):
+                maxTampering = TamperingRisks[i]
+            if(RepudiationRisks[i]>=maxRep):
+                maxRep=RepudiationRisks[i]
+            if (InformationDisclosureRisks[i] >= maxInf):
+                maxInf = InformationDisclosureRisks[i]
+            if(DoSRisks[i]>=maxDoS):
+                maxDoS=DoSRisks[i]
+            if (EoPRisks[i] >= maxEoP):
+                maxEoP = EoPRisks[i]
+
+
+
+    SpoofingOverallRiskString= calculate_severity_per_stride(maxSpoofing)
+    TamperingOverallRiskString= calculate_severity_per_stride(maxTampering)
+    RepOverallRiskString= calculate_severity_per_stride(maxRep)
+    InfOverallRiskString= calculate_severity_per_stride(maxInf)
+    DoSOverallRiskString= calculate_severity_per_stride(maxDoS)
+    EoPOverallRiskString= calculate_severity_per_stride(maxEoP)
+
+    return render(request, 'risk_analysis_result.html',
+                  {"processName": process, "systemId": systemId, "processId": processId,
+                   'spoofing': SpoofingOverallRiskString,
+                   'tampering': TamperingOverallRiskString,
+                   'repudiation': RepOverallRiskString,
+                   'informationdis': InfOverallRiskString,
+                   'dos': DoSOverallRiskString, 'eop': EoPOverallRiskString})

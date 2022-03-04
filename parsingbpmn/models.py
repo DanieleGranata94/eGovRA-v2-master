@@ -79,6 +79,12 @@ class Threat(models.Model):
     owasp_intrusion_detection = models.IntegerField(null=True)
     owasp_awareness = models.IntegerField(null=True)
 
+    #technical impact factors
+    loss_of_confidentiality = models.IntegerField(null=True)
+    loss_of_integrity = models.IntegerField(null=True)
+    loss_of_availability = models.IntegerField(null=True)
+    loss_of_accountability = models.IntegerField(null=True)
+
     class Meta:
         verbose_name="Threat"
         verbose_name_plural="Threats"
@@ -191,6 +197,11 @@ class Risk(models.Model):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, null=True)
     threat_stride = models.ForeignKey(Threat_Stride, on_delete=models.CASCADE, null=True)
 
+    likelihood =models.IntegerField(null=True)
+    impact =models.IntegerField(null=True)
+    severity =models.CharField(max_length=100)
+
+
     #Threat Agents
     skill= models.IntegerField(null=True)
     motive= models.IntegerField(null=True)
@@ -214,3 +225,15 @@ class Risk(models.Model):
     reputation = models.IntegerField(null=True)
     non_compliance = models.IntegerField(null=True)
     privacy = models.IntegerField(null=True)
+
+class OverallRisk(models.Model):
+    system = models.ForeignKey(System, on_delete=models.CASCADE, null=True)
+    process = models.ForeignKey(Process, on_delete=models.CASCADE, null=True)
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, null=True)
+
+    spoofing = models.CharField(max_length=100)
+    tampering = models.CharField(max_length=100)
+    repudiation = models.CharField(max_length=100)
+    information = models.CharField(max_length=100)
+    dos = models.CharField(max_length=100)
+    eop = models.CharField(max_length=100)

@@ -8,6 +8,12 @@
         left: 80%;
         top: 10%;
     }
+    #back2{
+    position: absolute;
+    left: 69%;
+    top: 10%;
+}
+
     </style>
 
     <div class="starter-template" style="margin-top: -6%;"> </div>
@@ -24,6 +30,22 @@
             </b>
             You can click on the threat to evaluate the countermeasures associated with it.
         </p>
+<br>
+    <div style="width:800px; margin:0 auto;">
+        <form method="POST" action="{% url 'export_threat_modeling' systemId=systemId processId=processId %}">
+            {% csrf_token %}
+            <button id="back" type="submit" class="btn btn-primary">Export as a CSV file</button>
+        </form>
+
+        {% if result_available == True %}
+        <form method="POST" action="{% url 'risk_analysis_result' systemId=systemId processId=processId %}">
+            {% csrf_token %}
+            <button id="back2" type="submit" class="btn btn-primary">Show Risk Analysis Overall Result</button>
+        </form>
+        {% endif %}
+
+    </div>
+
         <table class="table">
             <thead>
             <tr>
@@ -33,7 +55,6 @@
                 <th style="text-align: center">Threats</th>
                 <th style="text-align: center">Policy per asset</th>
                 <th style="text-align: center">Risk Rating</th>
-                <th style="text-align: center">Status</th>
 
             </tr>
             </thead>
@@ -111,7 +132,7 @@
                         </ul>
                     </td>
 
-                <td >
+                <td style="text-align:center; vertical-align: middle;">
 
                     <form method="POST" action="{% url 'threat_agent_wizard' systemId=systemId processId=processId assetId=info.0.id  %}">
                         {% csrf_token %}
@@ -123,13 +144,12 @@
 
                 </tr>
             {% endfor %}
+
             </tbody>
+
         </table>
 
-        <form method="POST" action="{% url 'export_threat_modeling' systemId=systemId processId=processId %}">
-            {% csrf_token %}
-            <button id="back" type="submit" class="btn btn-primary">Export as a CSV file</button>
-        </form>
+
 
 
 

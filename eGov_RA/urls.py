@@ -21,7 +21,8 @@ from django.conf.urls.static import static
 from parsingbpmn import views
 from parsingbpmn.views import bpmn_process_management, system_management, \
     delete_process, delete_system, process_enrichment, threat_modeling, process_view_task_type, process_view_attribute, \
-    task_type_enrichment, export_threat_modeling, threats_and_controls, bpmn_viewer, edit_process,  threat_modeling_view
+    task_type_enrichment, export_threat_modeling, threats_and_controls, bpmn_viewer, edit_process, threat_modeling_view, \
+    risk_analysis_result
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,6 +34,7 @@ urlpatterns = [
     path('delete_process/<int:systemId>/<int:processId>', delete_process, name='delete_process'),
     path('delete_system/<int:systemId>', delete_system, name='delete_system'),
     path('process_enrichment/<int:systemId>/<int:processId>', process_enrichment, name='process_enrichment'),
+    path('risk_analysis_result/<int:systemId>/<int:processId>', risk_analysis_result, name='risk_analysis_result'),
     path('bpmn_viewer/<int:pk>', bpmn_viewer, name='bpmn_viewer'),
     path('task_type_enrichment/<int:systemId>/<int:processId>', task_type_enrichment, name='task_type_enrichment'),
     path('threats_and_controls/<int:systemId>/<int:processId>', threats_and_controls, name='threats_and_controls'),
@@ -41,6 +43,8 @@ urlpatterns = [
     path('threat_agent_wizard/<int:systemId>/<int:processId>/<int:assetId>', views.threat_agent_wizard, name='threat_agent_wizard'),
     path('threat_agent_generation/<int:systemId>/<int:processId>/<int:assetId>', views.threat_agent_generation, name='threat_agent_generation'),
     path('calculate_threat_agent_risks/<int:systemId>/<int:processId>/<int:assetId>', views.calculate_threat_agent_risks, name='calculate_threat_agent_risks'),
+    path('StrideImpact/<int:systemId>/<int:processId>/<int:assetId>', views.StrideImpact, name='StrideImpact'),
+    path('StrideImpact_Result/<int:systemId>/<int:processId>/', views.StrideImpact_Result, name='StrideImpact_Result'),
     path('risk_analysis/<int:systemId>/<int:processId>/<int:assetId>', views.risk_analysis, name='risk_analysis'),
 
 ]
