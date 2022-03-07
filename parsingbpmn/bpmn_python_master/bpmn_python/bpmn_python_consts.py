@@ -107,6 +107,9 @@ class Consts(object):
     textAnnotation = "textAnnotation"
     association = "association"
 
+    #data object
+    dataObject = "dataObjectReference"
+    dataObject2 = "dataOutputAssociation"
 
 
     grid_column_width = 2

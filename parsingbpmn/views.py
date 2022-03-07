@@ -48,9 +48,14 @@ def bpmn_process_management(request, systemId):
             pk = last_process.pk
             bpmn_graph.load_diagram_from_xml_file(Process.objects.get(pk=pk).xml)
             lista = bpmn_graph.get_nodes()
+
+            print(lista)
             # print(lista)
             annotations = []
             associations = []
+            dataOBJ = []
+            dataOutput = []
+
 
             for tuple in lista:
                 for dizionario in tuple:
@@ -65,6 +70,23 @@ def bpmn_process_management(request, systemId):
                                 associations.append(dizionario)
                         except KeyError:
                             print()
+
+                    if type(dizionario) is dict:
+                        try:
+                            if dizionario['type'].lower().startswith("dataobject"):
+                                dataOBJ.append(dizionario)
+                        except KeyError:
+                            print()
+                    if type(dizionario) is dict:
+                        try:
+                            if dizionario['type'].lower().startswith("dataOutputAssociation"):
+                                dataOutput.append(dizionario["node_name"])
+                        except KeyError:
+                            print()
+
+
+            print(dataOBJ)
+            print(dataOutput)
 
             e = ""
             for tuple in lista:

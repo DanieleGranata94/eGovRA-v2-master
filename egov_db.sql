@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Creato il: Mar 01, 2022 alle 19:19
+-- Creato il: Mar 07, 2022 alle 16:27
 -- Versione del server: 10.4.14-MariaDB
 -- Versione PHP: 7.2.34
 
@@ -177,7 +177,15 @@ INSERT INTO `auth_permission` (`id`, `name`, `content_type_id`, `codename`) VALU
 (113, 'Can add stride impact record', 29, 'add_strideimpactrecord'),
 (114, 'Can change stride impact record', 29, 'change_strideimpactrecord'),
 (115, 'Can delete stride impact record', 29, 'delete_strideimpactrecord'),
-(116, 'Can view stride impact record', 29, 'view_strideimpactrecord');
+(116, 'Can view stride impact record', 29, 'view_strideimpactrecord'),
+(117, 'Can add threat_ stride', 30, 'add_threat_stride'),
+(118, 'Can change threat_ stride', 30, 'change_threat_stride'),
+(119, 'Can delete threat_ stride', 30, 'delete_threat_stride'),
+(120, 'Can view threat_ stride', 30, 'view_threat_stride'),
+(121, 'Can add overall risk', 31, 'add_overallrisk'),
+(122, 'Can change overall risk', 31, 'change_overallrisk'),
+(123, 'Can delete overall risk', 31, 'delete_overallrisk'),
+(124, 'Can view overall risk', 31, 'view_overallrisk');
 
 -- --------------------------------------------------------
 
@@ -268,6 +276,7 @@ INSERT INTO `django_content_type` (`id`, `app_label`, `model`) VALUES
 (13, 'parsingbpmn', 'attribute'),
 (11, 'parsingbpmn', 'attribute_value'),
 (14, 'parsingbpmn', 'control'),
+(31, 'parsingbpmn', 'overallrisk'),
 (8, 'parsingbpmn', 'process'),
 (21, 'parsingbpmn', 'reply'),
 (27, 'parsingbpmn', 'risk'),
@@ -285,6 +294,7 @@ INSERT INTO `django_content_type` (`id`, `app_label`, `model`) VALUES
 (25, 'parsingbpmn', 'threatagentriskscores'),
 (16, 'parsingbpmn', 'threat_has_attribute'),
 (17, 'parsingbpmn', 'threat_has_control'),
+(30, 'parsingbpmn', 'threat_stride'),
 (6, 'sessions', 'session');
 
 -- --------------------------------------------------------
@@ -326,7 +336,17 @@ INSERT INTO `django_migrations` (`id`, `app`, `name`, `applied`) VALUES
 (19, 'parsingbpmn', '0001_initial', '2022-02-13 15:21:16.860121'),
 (20, 'parsingbpmn', '0002_auto_20220215_1634', '2022-02-15 15:35:36.111560'),
 (21, 'parsingbpmn', '0003_auto_20220215_1636', '2022-02-15 15:36:33.882514'),
-(22, 'parsingbpmn', '0002_auto_20220226_1917', '2022-02-26 18:17:34.925177');
+(22, 'parsingbpmn', '0002_auto_20220226_1917', '2022-02-26 18:17:34.925177'),
+(23, 'parsingbpmn', '0003_auto_20220302_1056', '2022-03-02 10:10:47.121448'),
+(24, 'parsingbpmn', '0004_auto_20220302_1136', '2022-03-02 10:37:19.665538'),
+(25, 'parsingbpmn', '0005_auto_20220303_1344', '2022-03-03 12:44:56.033049'),
+(26, 'parsingbpmn', '0006_remove_strideimpactrecord_app', '2022-03-03 16:43:49.509998'),
+(27, 'parsingbpmn', '0007_auto_20220303_1742', '2022-03-03 16:43:49.674014'),
+(28, 'parsingbpmn', '0008_auto_20220303_1854', '2022-03-03 17:54:36.089723'),
+(29, 'parsingbpmn', '0009_auto_20220303_1930', '2022-03-03 18:30:34.721832'),
+(30, 'parsingbpmn', '0010_auto_20220303_1956', '2022-03-03 18:57:05.166347'),
+(31, 'parsingbpmn', '0011_auto_20220303_2003', '2022-03-03 19:03:40.608639'),
+(32, 'parsingbpmn', '0012_auto_20220303_2132', '2022-03-03 20:32:58.253143');
 
 -- --------------------------------------------------------
 
@@ -360,20 +380,20 @@ CREATE TABLE `parsingbpmn_asset` (
 --
 
 INSERT INTO `parsingbpmn_asset` (`id`, `name`, `bpmn_id`, `asset_type_id`, `process_id`, `position`) VALUES
-(427, 'Compile certificate request', 'Activity_0e44ssw', 3, 37, '310:150:100:80'),
-(428, 'Certificate request', 'Activity_0m5vgkb', 1, 37, '450:150:100:80'),
-(429, 'Recieve notification', 'Activity_15a5z8l', 2, 37, '720:140:100:80'),
-(430, 'Download Certificate', 'Activity_1lh76my', 3, 37, '860:140:100:80'),
-(431, 'Acquire certificate request', 'Activity_075eaka', 2, 37, '450:380:100:80'),
-(432, 'Certificate processing', 'Activity_0yo8nd0', 5, 37, '590:380:100:80'),
-(433, 'Notify certification ready', 'Activity_11l7oi5', 1, 37, '720:380:100:80'),
-(434, 'Compile certificate request', 'Activity_0e44ssw', 3, 38, '310:150:100:80'),
-(435, 'Certificate request', 'Activity_0m5vgkb', 1, 38, '450:150:100:80'),
-(436, 'Recieve notification', 'Activity_15a5z8l', 2, 38, '720:140:100:80'),
-(437, 'Download Certificate', 'Activity_1lh76my', 3, 38, '860:140:100:80'),
-(438, 'Acquire certificate request', 'Activity_075eaka', 2, 38, '450:380:100:80'),
-(439, 'Notify certification ready', 'Activity_11l7oi5', 1, 38, '720:380:100:80'),
-(440, 'Certificate processing', NULL, 5, 38, NULL);
+(742, 'Compile certificate request', 'Activity_0e44ssw', 3, 68, '310:150:100:80'),
+(743, 'Certificate request', 'Activity_0m5vgkb', 1, 68, '450:150:100:80'),
+(744, 'Recieve notification', 'Activity_15a5z8l', 2, 68, '720:140:100:80'),
+(745, 'Download Certificate', 'Activity_1lh76my', 3, 68, '860:140:100:80'),
+(746, 'Acquire certificate request', 'Activity_075eaka', 2, 68, '450:380:100:80'),
+(747, 'Certificate processing', 'Activity_0yo8nd0', 5, 68, '590:380:100:80'),
+(748, 'Notify certification ready', 'Activity_11l7oi5', 1, 68, '720:380:100:80'),
+(749, 'Compile certificate request', 'Activity_0e44ssw', 3, 69, '310:150:100:80'),
+(750, 'Certificate request', 'Activity_0m5vgkb', 1, 69, '450:150:100:80'),
+(751, 'Recieve notification', 'Activity_15a5z8l', 2, 69, '720:140:100:80'),
+(752, 'Download Certificate', 'Activity_1lh76my', 3, 69, '860:140:100:80'),
+(753, 'Acquire certificate request', 'Activity_075eaka', 2, 69, '450:380:100:80'),
+(754, 'Certificate processing', 'Activity_0yo8nd0', 5, 69, '590:380:100:80'),
+(755, 'Notify certification ready', 'Activity_11l7oi5', 1, 69, '720:380:100:80');
 
 -- --------------------------------------------------------
 
@@ -392,13 +412,20 @@ CREATE TABLE `parsingbpmn_asset_has_attribute` (
 --
 
 INSERT INTO `parsingbpmn_asset_has_attribute` (`id`, `asset_id`, `attribute_id`) VALUES
-(263, 427, 7),
-(264, 428, 1),
-(265, 429, 4),
-(266, 430, 7),
-(267, 431, 4),
-(268, 432, 10),
-(269, 433, 1);
+(418, 742, 7),
+(419, 743, 1),
+(420, 744, 4),
+(421, 745, 7),
+(422, 746, 4),
+(423, 747, 10),
+(424, 748, 1),
+(425, 749, 7),
+(426, 750, 2),
+(427, 751, 5),
+(428, 752, 7),
+(429, 753, 4),
+(430, 754, 10),
+(431, 755, 1);
 
 -- --------------------------------------------------------
 
@@ -528,6 +555,38 @@ INSERT INTO `parsingbpmn_control` (`id`, `name`, `description`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Struttura della tabella `parsingbpmn_overallrisk`
+--
+
+CREATE TABLE `parsingbpmn_overallrisk` (
+  `id` int(11) NOT NULL,
+  `spoofing` varchar(100) NOT NULL,
+  `tampering` varchar(100) NOT NULL,
+  `repudiation` varchar(100) NOT NULL,
+  `information` varchar(100) NOT NULL,
+  `dos` varchar(100) NOT NULL,
+  `eop` varchar(100) NOT NULL,
+  `asset_id` int(11) DEFAULT NULL,
+  `process_id` int(11) DEFAULT NULL,
+  `system_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dump dei dati per la tabella `parsingbpmn_overallrisk`
+--
+
+INSERT INTO `parsingbpmn_overallrisk` (`id`, `spoofing`, `tampering`, `repudiation`, `information`, `dos`, `eop`, `asset_id`, `process_id`, `system_id`) VALUES
+(82, 'LOW', 'LOW', 'LOW', 'VERY LOW', 'HIGH', 'LOW', 749, 69, 11),
+(83, 'MEDIUM', 'LOW', 'VERY LOW', 'LOW', 'HIGH', 'LOW', 750, 69, 11),
+(84, 'MEDIUM', 'VERY LOW', 'VERY LOW', 'LOW', 'HIGH', 'LOW', 751, 69, 11),
+(85, 'LOW', 'LOW', 'LOW', 'VERY LOW', 'HIGH', 'LOW', 752, 69, 11),
+(86, 'MEDIUM', 'VERY LOW', 'VERY LOW', 'LOW', 'MEDIUM', 'LOW', 753, 69, 11),
+(87, 'VERY LOW', 'LOW', 'VERY LOW', 'VERY LOW', 'HIGH', 'VERY LOW', 754, 69, 11),
+(88, 'MEDIUM', 'VERY LOW', 'VERY LOW', 'LOW', 'HIGH', 'LOW', 755, 69, 11);
+
+-- --------------------------------------------------------
+
+--
 -- Struttura della tabella `parsingbpmn_process`
 --
 
@@ -543,8 +602,8 @@ CREATE TABLE `parsingbpmn_process` (
 --
 
 INSERT INTO `parsingbpmn_process` (`id`, `name`, `xml`, `system_id`) VALUES
-(37, 'Municipality', 'processes/xml/bpmn_1.0_olAKiKB.bpmn', 4),
-(38, 'Municipality2', 'processes/xml/diagram_1.bpmn', 4);
+(68, 'Municipality', 'processes/xml/bpmn_1.0_alxG2XZ.bpmn', 8),
+(69, 'Municipality', 'processes/xml/bpmn_1.0_kYQIAXL.bpmn', 11);
 
 -- --------------------------------------------------------
 
@@ -604,9 +663,109 @@ CREATE TABLE `parsingbpmn_risk` (
   `non_compliance` int(11) DEFAULT NULL,
   `privacy` int(11) DEFAULT NULL,
   `asset_id` int(11) DEFAULT NULL,
-  `system_id` int(11) NOT NULL,
-  `threat_id` int(11) NOT NULL
+  `system_id` int(11) DEFAULT NULL,
+  `process_id` int(11) DEFAULT NULL,
+  `threat_stride_id` int(11) DEFAULT NULL,
+  `impact` int(11) DEFAULT NULL,
+  `likelihood` int(11) DEFAULT NULL,
+  `severity` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dump dei dati per la tabella `parsingbpmn_risk`
+--
+
+INSERT INTO `parsingbpmn_risk` (`id`, `skill`, `motive`, `opportunity`, `size`, `ease_of_discovery`, `ease_of_exploit`, `intrusion_detection`, `awareness`, `loss_of_confidentiality`, `loss_of_integrity`, `loss_of_availability`, `loss_of_accountability`, `financial`, `reputation`, `non_compliance`, `privacy`, `asset_id`, `system_id`, `process_id`, `threat_stride_id`, `impact`, `likelihood`, `severity`) VALUES
+(1121, 9, 7, 5, 7, 1, 3, 3, 5, 8, 8, 1, 5, 7, 6, 7, 5, 749, 11, 69, 1, 5, 5, 'MEDIUM'),
+(1122, 9, 7, 5, 7, 1, 3, 3, 5, 5, 5, 1, 5, 9, 8, 8, 8, 749, 11, 69, 2, 6, 5, 'HIGH'),
+(1123, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 5, 5, 749, 11, 69, 23, 5, 6, 'HIGH'),
+(1124, 9, 7, 5, 7, 6, 4, 4, 6, 5, 5, 5, 7, 9, 8, 8, 8, 749, 11, 69, 29, 6, 6, 'MEDIUM'),
+(1125, 9, 7, 5, 7, 5, 5, 5, 3, 5, 5, 9, 5, 9, 8, 8, 8, 749, 11, 69, 37, 7, 5, 'HIGH'),
+(1126, 9, 7, 5, 7, 8, 7, 7, 8, 5, 9, 5, 5, 5, 5, 5, 5, 749, 11, 69, 38, 5, 7, 'HIGH'),
+(1127, 9, 7, 5, 7, 2, 2, 3, 2, 5, 5, 5, 5, 9, 8, 8, 8, 749, 11, 69, 40, 6, 4, 'HIGH'),
+(1128, 9, 7, 5, 7, 7, 5, 5, 7, 7, 7, 8, 7, 9, 8, 8, 8, 749, 11, 69, 50, 7, 6, 'CRITICAL'),
+(1129, 9, 7, 5, 7, 8, 7, 7, 8, 5, 5, 5, 5, 9, 8, 8, 8, 749, 11, 69, 56, 6, 7, 'CRITICAL'),
+(1130, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 749, 11, 69, 57, 2, 6, 'MEDIUM'),
+(1131, 9, 7, 5, 7, 8, 7, 7, 8, 5, 5, 5, 5, 9, 8, 8, 8, 749, 11, 69, 60, 6, 7, 'CRITICAL'),
+(1132, 9, 7, 5, 7, 7, 7, 8, 8, 8, 7, 8, 9, 9, 8, 8, 8, 749, 11, 69, 74, 8, 7, 'CRITICAL'),
+(1133, 9, 7, 5, 7, 1, 3, 3, 5, 8, 8, 1, 5, 7, 6, 7, 5, 750, 11, 69, 1, 5, 5, 'MEDIUM'),
+(1134, 9, 7, 5, 7, 1, 3, 3, 5, 5, 5, 1, 5, 9, 8, 8, 8, 750, 11, 69, 2, 6, 5, 'HIGH'),
+(1135, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 5, 5, 750, 11, 69, 23, 5, 6, 'HIGH'),
+(1136, 9, 7, 5, 7, 4, 8, 2, 1, 5, 5, 5, 4, 7, 6, 7, 5, 750, 11, 69, 27, 5, 5, 'MEDIUM'),
+(1137, 9, 7, 5, 7, 6, 4, 4, 6, 5, 5, 5, 7, 9, 8, 8, 8, 750, 11, 69, 29, 6, 6, 'MEDIUM'),
+(1138, 9, 7, 5, 7, 5, 5, 5, 3, 5, 5, 9, 5, 9, 8, 8, 8, 750, 11, 69, 37, 7, 5, 'HIGH'),
+(1139, 9, 7, 5, 7, 7, 5, 5, 7, 7, 7, 8, 7, 9, 8, 8, 8, 750, 11, 69, 50, 7, 6, 'CRITICAL'),
+(1140, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 750, 11, 69, 51, 6, 6, 'MEDIUM'),
+(1141, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 750, 11, 69, 52, 6, 6, 'MEDIUM'),
+(1142, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 750, 11, 69, 53, 6, 6, 'MEDIUM'),
+(1143, 9, 7, 5, 7, 8, 7, 7, 8, 5, 5, 5, 5, 9, 8, 8, 8, 750, 11, 69, 56, 6, 7, 'CRITICAL'),
+(1144, 9, 7, 5, 7, 8, 7, 7, 8, 5, 5, 5, 5, 9, 8, 8, 8, 750, 11, 69, 60, 6, 7, 'CRITICAL'),
+(1145, 9, 7, 5, 7, 8, 7, 5, 8, 5, 5, 5, 5, 7, 6, 7, 5, 750, 11, 69, 65, 5, 7, 'HIGH'),
+(1146, 9, 7, 5, 7, 7, 6, 5, 5, 5, 5, 5, 5, 7, 6, 7, 5, 750, 11, 69, 69, 5, 6, 'HIGH'),
+(1147, 9, 7, 5, 7, 9, 8, 7, 8, 5, 5, 5, 5, 7, 6, 7, 5, 750, 11, 69, 71, 5, 7, 'HIGH'),
+(1148, 9, 7, 5, 7, 1, 3, 3, 5, 8, 8, 1, 5, 7, 6, 7, 5, 751, 11, 69, 1, 5, 5, 'MEDIUM'),
+(1149, 9, 7, 5, 7, 1, 3, 3, 5, 5, 5, 1, 5, 9, 8, 8, 8, 751, 11, 69, 2, 6, 5, 'HIGH'),
+(1150, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 5, 5, 751, 11, 69, 23, 5, 6, 'HIGH'),
+(1151, 9, 7, 5, 7, 4, 8, 2, 1, 5, 5, 5, 4, 7, 6, 7, 5, 751, 11, 69, 27, 5, 5, 'MEDIUM'),
+(1152, 9, 7, 5, 7, 5, 5, 5, 3, 5, 5, 9, 5, 9, 8, 8, 8, 751, 11, 69, 37, 7, 5, 'HIGH'),
+(1153, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 751, 11, 69, 51, 6, 6, 'MEDIUM'),
+(1154, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 751, 11, 69, 52, 6, 6, 'MEDIUM'),
+(1155, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 751, 11, 69, 53, 6, 6, 'MEDIUM'),
+(1156, 9, 7, 5, 7, 8, 7, 7, 8, 5, 5, 5, 5, 9, 8, 8, 8, 751, 11, 69, 56, 6, 7, 'CRITICAL'),
+(1157, 9, 7, 5, 7, 8, 7, 7, 8, 5, 5, 5, 5, 9, 8, 8, 8, 751, 11, 69, 60, 6, 7, 'CRITICAL'),
+(1158, 9, 7, 5, 7, 8, 7, 5, 8, 5, 5, 5, 5, 7, 6, 7, 5, 751, 11, 69, 65, 5, 7, 'HIGH'),
+(1159, 9, 7, 5, 7, 7, 6, 7, 8, 5, 5, 5, 5, 7, 6, 7, 5, 751, 11, 69, 67, 5, 7, 'HIGH'),
+(1160, 9, 7, 5, 7, 7, 6, 5, 5, 5, 5, 5, 5, 7, 6, 7, 5, 751, 11, 69, 69, 5, 6, 'HIGH'),
+(1161, 9, 7, 5, 7, 9, 8, 7, 8, 5, 5, 5, 5, 7, 6, 7, 5, 751, 11, 69, 71, 5, 7, 'HIGH'),
+(1162, 9, 7, 5, 7, 9, 8, 8, 9, 3, 2, 2, 1, 7, 6, 7, 5, 751, 11, 69, 72, 4, 7, 'HIGH'),
+(1163, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 9, 8, 9, 8, 8, 8, 751, 11, 69, 73, 7, 6, 'MEDIUM'),
+(1164, 9, 7, 5, 7, 7, 7, 8, 8, 8, 7, 8, 9, 9, 8, 8, 8, 751, 11, 69, 74, 8, 7, 'CRITICAL'),
+(1165, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 7, 6, 7, 5, 751, 11, 69, 80, 5, 6, 'HIGH'),
+(1166, 9, 7, 5, 7, 1, 3, 3, 5, 8, 8, 1, 5, 7, 6, 7, 5, 752, 11, 69, 1, 5, 5, 'MEDIUM'),
+(1167, 9, 7, 5, 7, 1, 3, 3, 5, 5, 5, 1, 5, 9, 8, 8, 8, 752, 11, 69, 2, 6, 5, 'HIGH'),
+(1168, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 5, 5, 752, 11, 69, 23, 5, 6, 'HIGH'),
+(1169, 9, 7, 5, 7, 6, 4, 4, 6, 5, 5, 5, 7, 9, 8, 8, 8, 752, 11, 69, 29, 6, 6, 'MEDIUM'),
+(1170, 9, 7, 5, 7, 5, 5, 5, 3, 5, 5, 9, 5, 9, 8, 8, 8, 752, 11, 69, 37, 7, 5, 'HIGH'),
+(1171, 9, 7, 5, 7, 8, 7, 7, 8, 5, 9, 5, 5, 5, 5, 5, 5, 752, 11, 69, 38, 5, 7, 'HIGH'),
+(1172, 9, 7, 5, 7, 2, 2, 3, 2, 5, 5, 5, 5, 9, 8, 8, 8, 752, 11, 69, 40, 6, 4, 'HIGH'),
+(1173, 9, 7, 5, 7, 7, 5, 5, 7, 7, 7, 8, 7, 9, 8, 8, 8, 752, 11, 69, 50, 7, 6, 'CRITICAL'),
+(1174, 9, 7, 5, 7, 8, 7, 7, 8, 5, 5, 5, 5, 9, 8, 8, 8, 752, 11, 69, 56, 6, 7, 'CRITICAL'),
+(1175, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 752, 11, 69, 57, 2, 6, 'MEDIUM'),
+(1176, 9, 7, 5, 7, 8, 7, 7, 8, 5, 5, 5, 5, 9, 8, 8, 8, 752, 11, 69, 60, 6, 7, 'CRITICAL'),
+(1177, 9, 7, 5, 7, 7, 7, 8, 8, 8, 7, 8, 9, 9, 8, 8, 8, 752, 11, 69, 74, 8, 7, 'CRITICAL'),
+(1178, 9, 7, 5, 7, 1, 3, 3, 5, 8, 8, 1, 5, 7, 6, 7, 5, 753, 11, 69, 1, 5, 5, 'MEDIUM'),
+(1179, 9, 7, 5, 7, 1, 3, 3, 5, 5, 5, 1, 5, 9, 8, 8, 8, 753, 11, 69, 2, 6, 5, 'HIGH'),
+(1180, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 5, 5, 753, 11, 69, 23, 5, 6, 'HIGH'),
+(1181, 9, 7, 5, 7, 4, 8, 2, 1, 5, 5, 5, 4, 7, 6, 7, 5, 753, 11, 69, 27, 5, 5, 'MEDIUM'),
+(1182, 9, 7, 5, 7, 5, 5, 5, 3, 5, 5, 9, 5, 9, 8, 8, 8, 753, 11, 69, 37, 7, 5, 'HIGH'),
+(1183, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 753, 11, 69, 51, 6, 6, 'MEDIUM'),
+(1184, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 753, 11, 69, 52, 6, 6, 'MEDIUM'),
+(1185, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 753, 11, 69, 53, 6, 6, 'MEDIUM'),
+(1186, 9, 7, 5, 7, 8, 7, 7, 8, 5, 5, 5, 5, 9, 8, 8, 8, 753, 11, 69, 56, 6, 7, 'CRITICAL'),
+(1187, 9, 7, 5, 7, 8, 7, 7, 8, 5, 5, 5, 5, 9, 8, 8, 8, 753, 11, 69, 60, 6, 7, 'CRITICAL'),
+(1188, 9, 7, 5, 7, 8, 7, 5, 8, 5, 5, 5, 5, 7, 6, 7, 5, 753, 11, 69, 65, 5, 7, 'HIGH'),
+(1189, 9, 7, 5, 7, 9, 8, 7, 8, 5, 5, 5, 5, 7, 6, 7, 5, 753, 11, 69, 71, 5, 7, 'HIGH'),
+(1190, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 754, 11, 69, 32, 6, 6, 'MEDIUM'),
+(1191, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 754, 11, 69, 34, 6, 6, 'MEDIUM'),
+(1192, 9, 7, 5, 7, 5, 5, 5, 3, 5, 5, 9, 5, 9, 8, 8, 8, 754, 11, 69, 37, 7, 5, 'HIGH'),
+(1193, 9, 7, 5, 7, 7, 5, 5, 7, 7, 7, 8, 7, 9, 8, 8, 8, 754, 11, 69, 50, 7, 6, 'CRITICAL'),
+(1194, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 754, 11, 69, 53, 6, 6, 'MEDIUM'),
+(1195, 9, 7, 5, 7, 8, 7, 7, 8, 5, 5, 5, 5, 9, 8, 8, 8, 754, 11, 69, 56, 6, 7, 'CRITICAL'),
+(1196, 9, 7, 5, 7, 8, 7, 7, 8, 5, 5, 5, 5, 9, 8, 8, 8, 754, 11, 69, 60, 6, 7, 'CRITICAL'),
+(1197, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 9, 8, 9, 8, 8, 8, 754, 11, 69, 73, 7, 6, 'MEDIUM'),
+(1198, 9, 7, 5, 7, 1, 3, 3, 5, 8, 8, 1, 5, 7, 6, 7, 5, 755, 11, 69, 1, 5, 5, 'MEDIUM'),
+(1199, 9, 7, 5, 7, 1, 3, 3, 5, 5, 5, 1, 5, 9, 8, 8, 8, 755, 11, 69, 2, 6, 5, 'HIGH'),
+(1200, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 5, 5, 755, 11, 69, 23, 5, 6, 'HIGH'),
+(1201, 9, 7, 5, 7, 4, 8, 2, 1, 5, 5, 5, 4, 7, 6, 7, 5, 755, 11, 69, 27, 5, 5, 'MEDIUM'),
+(1202, 9, 7, 5, 7, 5, 5, 5, 3, 5, 5, 9, 5, 9, 8, 8, 8, 755, 11, 69, 37, 7, 5, 'HIGH'),
+(1203, 9, 7, 5, 7, 7, 5, 5, 7, 7, 7, 8, 7, 9, 8, 8, 8, 755, 11, 69, 50, 7, 6, 'CRITICAL'),
+(1204, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 755, 11, 69, 51, 6, 6, 'MEDIUM'),
+(1205, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 755, 11, 69, 52, 6, 6, 'MEDIUM'),
+(1206, 9, 7, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 9, 8, 8, 8, 755, 11, 69, 53, 6, 6, 'MEDIUM'),
+(1207, 9, 7, 5, 7, 8, 7, 7, 8, 5, 5, 5, 5, 9, 8, 8, 8, 755, 11, 69, 56, 6, 7, 'CRITICAL'),
+(1208, 9, 7, 5, 7, 8, 7, 7, 8, 5, 5, 5, 5, 9, 8, 8, 8, 755, 11, 69, 60, 6, 7, 'CRITICAL'),
+(1209, 9, 7, 5, 7, 8, 7, 5, 8, 5, 5, 5, 5, 7, 6, 7, 5, 755, 11, 69, 65, 5, 7, 'HIGH'),
+(1210, 9, 7, 5, 7, 9, 8, 7, 8, 5, 5, 5, 5, 7, 6, 7, 5, 755, 11, 69, 71, 5, 7, 'HIGH');
 
 -- --------------------------------------------------------
 
@@ -626,10 +785,10 @@ CREATE TABLE `parsingbpmn_stride` (
 INSERT INTO `parsingbpmn_stride` (`id`, `category`) VALUES
 (1, 'Spoofing'),
 (2, 'Tampering'),
-(3, 'REPUTATION'),
+(3, 'Repudiation'),
 (4, 'Information Disclosure'),
-(5, 'Denial Of Service'),
-(6, 'Escalation of Privileges');
+(5, 'Denial Of Services'),
+(6, 'Elevation of privilege');
 
 -- --------------------------------------------------------
 
@@ -646,8 +805,20 @@ CREATE TABLE `parsingbpmn_strideimpactrecord` (
   `created_at` datetime(6) DEFAULT NULL,
   `updated_at` datetime(6) DEFAULT NULL,
   `stride_id` int(11) DEFAULT NULL,
-  `system_id` int(11) DEFAULT NULL
+  `system_id` int(11) DEFAULT NULL,
+  `process_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dump dei dati per la tabella `parsingbpmn_strideimpactrecord`
+--
+
+INSERT INTO `parsingbpmn_strideimpactrecord` (`id`, `financialdamage`, `reputationdamage`, `noncompliance`, `privacyviolation`, `created_at`, `updated_at`, `stride_id`, `system_id`, `process_id`) VALUES
+(1012, 7, 6, 7, 5, '2022-03-04 08:52:11.000925', '2022-03-04 08:52:11.000925', 1, NULL, 69),
+(1013, 5, 5, 5, 5, '2022-03-04 08:52:11.025195', '2022-03-04 08:52:11.026198', 2, NULL, 69),
+(1014, 5, 5, 5, 5, '2022-03-04 08:52:11.040227', '2022-03-04 08:52:11.040227', 4, NULL, 69),
+(1015, 9, 8, 8, 8, '2022-03-04 08:52:11.046195', '2022-03-04 08:52:11.046195', 5, NULL, 69),
+(1016, 6, 6, 5, 5, '2022-03-04 08:52:11.055190', '2022-03-04 08:52:11.055190', 6, NULL, 69);
 
 -- --------------------------------------------------------
 
@@ -666,7 +837,8 @@ CREATE TABLE `parsingbpmn_system` (
 
 INSERT INTO `parsingbpmn_system` (`id`, `name`) VALUES
 (3, 'Regione Campania'),
-(4, 'Unicampania');
+(8, 'Unicampania'),
+(11, 'Municipality');
 
 -- --------------------------------------------------------
 
@@ -697,20 +869,18 @@ INSERT INTO `parsingbpmn_system_threatagent` (`id`, `category_id`, `system_id`) 
 (10, 12, 3),
 (11, 5, 3),
 (12, 14, 3),
-(13, 4, 4),
-(14, 10, 4),
-(15, 13, 4),
-(16, 16, 4),
-(17, 18, 4),
-(18, 20, 4),
-(19, 1, 4),
-(20, 2, 4),
-(21, 3, 4),
-(22, 9, 4),
-(23, 15, 4),
-(24, 19, 4),
-(25, 5, 4),
-(26, 14, 4);
+(42, 4, 8),
+(43, 9, 8),
+(44, 10, 8),
+(45, 13, 8),
+(46, 16, 8),
+(47, 18, 8),
+(48, 20, 8),
+(49, 6, 11),
+(50, 8, 11),
+(51, 13, 11),
+(52, 16, 11),
+(53, 20, 11);
 
 -- --------------------------------------------------------
 
@@ -1131,88 +1301,93 @@ CREATE TABLE `parsingbpmn_threat` (
   `owasp_awareness` int(11) DEFAULT NULL,
   `owasp_ease_of_discovery` int(11) DEFAULT NULL,
   `owasp_ease_of_exploit` int(11) DEFAULT NULL,
-  `owasp_intrusion_detection` int(11) DEFAULT NULL
+  `owasp_intrusion_detection` int(11) DEFAULT NULL,
+  `loss_of_accountability` int(11) DEFAULT NULL,
+  `loss_of_availability` int(11) DEFAULT NULL,
+  `loss_of_confidentiality` int(11) DEFAULT NULL,
+  `loss_of_integrity` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dump dei dati per la tabella `parsingbpmn_threat`
 --
 
-INSERT INTO `parsingbpmn_threat` (`id`, `name`, `description`, `owasp_awareness`, `owasp_ease_of_discovery`, `owasp_ease_of_exploit`, `owasp_intrusion_detection`) VALUES
-(1, 'Fraud', 'Fraud made by human', 5, 5, 5, 5),
-(2, 'Sabotage', 'Intentional actions (non-fulfillment or defective fulfillment of personal duties) aimed to cause disruption or damage of IT Assets', 5, 5, 5, 5),
-(3, 'Vandalism', 'Act of physically damage of IT Assets', 5, 5, 5, 5),
-(4, 'Theft (devices, storage media and documents)\r\n', 'Stealing of information or IT Assets. [Theft of mobile devices (smartphones/ tablets) - Theft of fi9ed hardware - Theft of documents - Theft of backups]', 5, 5, 5, 5),
-(5, 'Information leakage/sharing\r\n', 'Sharing information with unauthorised entities. Loss of information confidentiality due to intentional human actions.', 5, 5, 5, 5),
-(6, 'Unauthorized physical access / Unauthorised entry to premises\r\n', 'Unapproved access to facility.\r\n', 5, 5, 5, 5),
-(7, 'Coercion, extortion or corruption\r\n', 'Actions caused by coercion, extortion or corruption\r\n', 5, 5, 5, 5),
-(8, 'Damage from the warfare\r\n', 'Threats of direct impact of warfare activities\r\n', 5, 5, 5, 5),
-(9, 'Terrorists attack\r\n', 'Threats of bombing or other actions that counts as \"terrorists attacks\"\r\n', 5, 5, 5, 5),
-(10, 'Information leakage/sharing due to human error\r\n', 'Unintentional distribution of private or sensitive data to an unauthorized entity by staff member.\r\n', 5, 5, 5, 5),
-(11, 'Erroneous use or administration of devices and systems\r\n', 'Information leakage / sharing / damage caused by users IT Assets misuse (lack of awareness of application features) or wrong / improperly IT Assets configuration or management\r\n', 5, 5, 5, 5),
-(12, 'Using information from an unreliable source\r\n', 'Bad decision based on unreliable sources of information or unchecked information.\r\n', 5, 5, 5, 5),
-(13, 'Unintentional change of data in an information system\r\n', 'Loss of information integrity due to human error (information system user mistake)\r\n', 5, 5, 5, 5),
-(14, 'Inadequate design and planning or improperly adaptation\r\n', 'Threats caused by improperly IT Assets or business processes design (inadequate specifications of IT products, inadequate usability, insecure interfaces, policy/procedure flows, design errors)\r\n', 5, 5, 5, 5),
-(15, 'Damage caused by a third party \r\n', 'Threats of damage of IT Assets caused by third party \r\n', 5, 5, 5, 5),
-(16, 'Damages resulting from penetration testing\r\n', 'Threats to information systems caused by improperly / inprepare conducting of IT penetration testing\r\n', 5, 5, 5, 5),
-(17, 'Loss of information in the cloud\r\n', 'Threats of loosing information or data stored in the cloud\r\n', 5, 5, 5, 5),
-(18, 'Loss of (integrity of) sensitive information\r\n', 'Threats of loosing information or data (or changing) information classified as sensitive\r\n', 5, 5, 5, 5),
-(19, 'Loss of devices, storage media and documents\r\n', 'Threats of the lack of availability (loosing) of IT Assets and documents\r\n', 5, 5, 5, 5),
-(20, 'Destruction of records\r\n', 'Threats of the lack of availability (destruction) of data and records (information) stored in devices and storage media\r\n', 5, 5, 5, 5),
-(21, 'Disaster (natural earthquakes,floods,landslides, tsunamis,heavy rains,heavy snowfalls,heavy winds)', 'Large scale and large effects natural disasters', 5, 5, 5, 5),
-(22, 'Fire', 'Threat of fire ', 5, 5, 5, 5),
-(23, 'Pollution, dust, corrosion\r\n', 'Threat of disruption of work of IT systems (hardware) dur to pollution, dust or corrosion (arising from the air)\r\n', 5, 5, 5, 5),
-(24, 'Thunder stroke\r\n', 'Threat of damage of IT hardware caused by the thunder strike (the electrical overvoltage)\r\n', 5, 5, 5, 5),
-(25, 'Water\r\n', 'Threat of damage of IT hardware caused by the water\r\n', 5, 5, 5, 5),
-(26, 'Explosion\r\n', 'empty\r\n', 5, 5, 5, 5),
-(27, 'Dangerous radiation leak\r\n', 'empty\r\n', 5, 5, 5, 5),
-(28, 'Unfavorable climatic conditions\r\n', 'Threat of disruption of work of IT systems due to climatic conditions that have the negative effect on hardware\r\n', 5, 5, 5, 5),
-(29, 'Major events in the environment\r\n', 'empty\r\n', 5, 5, 5, 5),
-(30, 'Threats from space / Electromagnetic storm\r\n', 'Threats of the negative impact of solar radiation (harmful rays) to a satellites and radio wave communication systems - Electromagnetic storm\r\n', 5, 5, 5, 5),
-(31, 'Wildlife\r\n', 'empty\r\n', 5, 5, 5, 5),
-(32, 'Failure of devices or systems\r\n', 'Threat of failure of IT hardware and/or software assets or its parts\r\n', 5, 5, 5, 5),
-(33, 'Failure or disruption of communication links (communication networks)\r\n', 'Threat of failure or malfunction of communications links \r\n', 5, 5, 5, 5),
-(34, 'Failure or disruption of main supply\r\n', 'Threat of failure or disruption of supply required for information systems\r\n', 5, 5, 5, 5),
-(35, 'Failure or disruption of service providers (supply chain)\r\n', 'Threat of failure or disruption of thire party services required for proper operation of information systems\r\n', 5, 5, 5, 5),
-(36, 'Malfunction of equipment (devices or systems)\r\n', 'Threat of malfunction of IT hardware and/or software assets or its parts\r\n', 5, 5, 5, 5),
-(37, 'Loss of resources\r\n', 'Unavailability of resources (supply) required for proper operation of information system\r\n', 5, 5, 5, 5),
-(38, 'Absence of personnel\r\n', 'Unavailability of key personnel and their competences\r\n', 5, 5, 5, 5),
-(39, 'Strike\r\n', 'Unavailability of staff due strike (large scale absence of personnel)\r\n', 5, 5, 5, 5),
-(40, 'Loss of support services\r\n', 'Unavailability of support services required for proper operation of information system\r\n', 5, 5, 5, 5),
-(41, 'Internet outage\r\n', 'Unavailability of the Internet connection\r\n', 5, 5, 5, 5),
-(42, 'Network outage\r\n', 'Unavailability of communication links\r\n', 5, 5, 5, 5),
-(43, 'War driving\r\n', 'Threat of locating and possible exploite connection to the wireless network\r\n', 5, 5, 5, 5),
-(44, 'Intercepting compromising emissions\r\n', 'Threat of disclosure transmitted information using interception and analysis of compromising emission\r\n', 5, 5, 5, 5),
-(45, 'Interception of information\r\n', 'Threat of interception of information improperly secured in transmission or improperly actions of staff\r\n', 5, 5, 5, 5),
-(46, 'Interfering radiation\r\n', 'Threat of failure of IT hardware or transmission connection due to electromagnetic induction or electromagnetic radiation emitted from an another source\r\n', 5, 5, 5, 5),
-(47, 'Replay of messages\r\n', 'Threat in which valid data transmission is maliciously or fraudulently repeated or delayed\r\n', 5, 5, 5, 5),
-(48, 'Network Reconnaissance, Network traffic manipulation and Information gathering\r\n', 'Threat of identifying information about network to find security weaknesses\r\n', 5, 5, 5, 5),
-(49, 'Man in the middle/ Session hijacking \r\n', 'Threats that relay on alters of communication between two parties\r\n', 5, 5, 5, 5),
-(50, 'Identity theft (Identity Fraud/ Account) \r\n', 'Threat of identity theft action\r\n', 5, 5, 5, 5),
-(51, 'Receive of unsolicited E-mail \r\n', 'Threat of receive of unsolicited E-mail that affect for information security and efficienty of work (SPAM)\r\n', 5, 5, 5, 5),
-(52, 'Denial of service\r\n', 'Threat of Deny of service type attacks at information systems/services\r\n', 5, 5, 5, 5),
-(53, 'Malicious code/ software/ activity\r\n', 'Threat of malicious code or software execution\r\n', 5, 5, 5, 5),
-(54, 'Social Engineering\r\n', 'Phishing attacks, Spear phishing attacks\r\n', 5, 5, 5, 5),
-(55, 'Abuse of Information Leakage\r\n', '? What is difference between others Physical attack (deliberate/ intentional)?\r\n', 5, 5, 5, 5),
-(56, 'Generation and use of rogue certificates\r\n', 'Threat of use of rogue certificates\r\n', 5, 5, 5, 5),
-(57, 'Manipulation of hardware and software\r\n', 'Threat of unauthorized manipulation of hardware and software\r\n', 5, 5, 5, 5),
-(58, 'Manipulation of information\r\n', 'Threat of intentional data manipulation to mislead information systems or somebody or to cover other nefarious activities (loss of integrity of information) \r\n', 5, 5, 5, 5),
-(59, 'Misuse of audit tools\r\n', 'Threat of nefarious actions with use of audit tools (discovery security weaknesses in information systems)\r\n', 5, 5, 5, 5),
-(60, 'Misuse of information/ information systems (including mobile apps)\r\n', 'Threat of nefarious action due to misuse of information / information systems\r\n', 5, 5, 5, 5),
-(61, 'Unauthorized activities\r\n', 'empty\r\n', 5, 5, 5, 5),
-(62, 'Unauthorized installation of software\r\n', 'Threat of unauthorized installation of software\r\n', 5, 5, 5, 5),
-(63, 'Compromising confidential information (data breaches)\r\n', 'Threat of data breach \r\n', 5, 5, 5, 5),
-(64, 'Hoax\r\n', 'Threat of disruption of work due to False rumor and/or a fake warning\r\n', 5, 5, 5, 5),
-(65, 'Remote activity (execution)\r\n', 'Threat of remote activity over controled IT Assets\r\n', 5, 5, 5, 5),
-(66, 'Targeted attacks (APTs etc.)\r\n', 'Threat of sophisticated targetes attack with combination of many attack techniques\r\n', 5, 5, 5, 5),
-(67, 'Failed of bussines process\r\n', 'empty\r\n', 5, 5, 5, 5),
-(68, 'Brute force\r\n', 'empty\r\n', 5, 5, 5, 5),
-(69, 'Abuse of authorizations\r\n', 'empty\r\n', 5, 5, 5, 5),
-(70, 'Violation of laws or regulations / Breach of legislation\r\n', 'Threat of finacial or legal penatly or lost of trust of customers and collaborators due to violation of law or regulations\r\n', 5, 5, 5, 5),
-(71, 'Failure to meet contractual requirements\r\n', 'Threat of finacial penatly or lost of trust of customers and collaborators due to failure to meet contractual requirements\r\n', 5, 5, 5, 5),
-(72, 'Unauthorized use of IPR protected resources\r\n', 'Threat of finacial or legal penatly or lost of trust of customers and collaborators due to improper/illegal use of copyrights material\r\n', 5, 5, 5, 5),
-(73, 'Abuse of personal data\r\n', 'Threat of illegal use personal data\r\n', 5, 5, 5, 5),
-(74, 'Judiciary decisions/court orders\r\n', 'empty\r\n', 5, 5, 5, 5);
+INSERT INTO `parsingbpmn_threat` (`id`, `name`, `description`, `owasp_awareness`, `owasp_ease_of_discovery`, `owasp_ease_of_exploit`, `owasp_intrusion_detection`, `loss_of_accountability`, `loss_of_availability`, `loss_of_confidentiality`, `loss_of_integrity`) VALUES
+(1, 'Fraud', 'Fraud made by human', 5, 1, 3, 3, 5, 1, 8, 8),
+(2, 'Sabotage', 'Intentional actions (non-fulfillment or defective fulfillment of personal duties) aimed to cause disruption or damage of IT Assets', 5, 1, 3, 3, 5, 1, 5, 5),
+(3, 'Vandalism', 'Act of physically damage of IT Assets', 3, 6, 8, 1, 3, 8, 7, 9),
+(4, 'Theft (devices, storage media and documents)\r\n', 'Stealing of information or IT Assets. [Theft of mobile devices (smartphones/ tablets) - Theft of fi9ed hardware - Theft of documents - Theft of backups]', 6, 5, 3, 4, 2, 9, 8, 7),
+(5, 'Information leakage/sharing\r\n', 'Sharing information with unauthorised entities. Loss of information confidentiality due to intentional human actions.', 3, 2, 7, 2, 6, 4, 9, 7),
+(6, 'Unauthorized physical access / Unauthorised entry to premises\r\n', 'Unapproved access to facility.\r\n', 2, 3, 8, 7, 6, 2, 8, 9),
+(7, 'Coercion, extortion or corruption\r\n', 'Actions caused by coercion, extortion or corruption\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(8, 'Damage from the warfare\r\n', 'Threats of direct impact of warfare activities\r\n', 5, 5, 5, 5, 8, 8, 7, 8),
+(9, 'Terrorists attack\r\n', 'Threats of bombing or other actions that counts as \"terrorists attacks\"\r\n', 5, 5, 5, 5, 8, 8, 7, 8),
+(10, 'Information leakage/sharing due to human error\r\n', 'Unintentional distribution of private or sensitive data to an unauthorized entity by staff member.\r\n', 1, 4, 8, 2, 4, 5, 5, 5),
+(11, 'Erroneous use or administration of devices and systems\r\n', 'Information leakage / sharing / damage caused by users IT Assets misuse (lack of awareness of application features) or wrong / improperly IT Assets configuration or management\r\n', 6, 6, 4, 4, 7, 5, 5, 5),
+(12, 'Using information from an unreliable source\r\n', 'Bad decision based on unreliable sources of information or unchecked information.\r\n', 8, 7, 7, 8, 5, 5, 5, 5),
+(13, 'Unintentional change of data in an information system\r\n', 'Loss of information integrity due to human error (information system user mistake)\r\n', 5, 5, 5, 5, 5, 2, 8, 9),
+(14, 'Inadequate design and planning or improperly adaptation\r\n', 'Threats caused by improperly IT Assets or business processes design (inadequate specifications of IT products, inadequate usability, insecure interfaces, policy/procedure flows, design errors)\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(15, 'Damage caused by a third party \r\n', 'Threats of damage of IT Assets caused by third party \r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(16, 'Damages resulting from penetration testing\r\n', 'Threats to information systems caused by improperly / inprepare conducting of IT penetration testing\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(17, 'Loss of information in the cloud\r\n', 'Threats of loosing information or data stored in the cloud\r\n', 3, 5, 5, 5, 5, 9, 5, 5),
+(18, 'Loss of (integrity of) sensitive information\r\n', 'Threats of loosing information or data (or changing) information classified as sensitive\r\n', 8, 8, 7, 7, 5, 5, 5, 9),
+(19, 'Loss of devices, storage media and documents\r\n', 'Threats of the lack of availability (loosing) of IT Assets and documents\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(20, 'Destruction of records\r\n', 'Threats of the lack of availability (destruction) of data and records (information) stored in devices and storage media\r\n', 2, 2, 2, 3, 5, 5, 5, 5),
+(21, 'Disaster (natural earthquakes,floods,landslides, tsunamis,heavy rains,heavy snowfalls,heavy winds)', 'Large scale and large effects natural disasters', 1, 1, 1, 1, 5, 5, 5, 5),
+(22, 'Fire', 'Threat of fire ', 1, 1, 1, 1, 5, 5, 5, 5),
+(23, 'Pollution, dust, corrosion\r\n', 'Threat of disruption of work of IT systems (hardware) dur to pollution, dust or corrosion (arising from the air)\r\n', 1, 1, 1, 1, 5, 5, 5, 5),
+(24, 'Thunder stroke\r\n', 'Threat of damage of IT hardware caused by the thunder strike (the electrical overvoltage)\r\n', 1, 1, 1, 1, 5, 5, 5, 5),
+(25, 'Water\r\n', 'Threat of damage of IT hardware caused by the water\r\n', 1, 1, 1, 1, 5, 5, 5, 5),
+(26, 'Explosion\r\n', 'empty\r\n', 1, 1, 1, 1, 5, 5, 5, 5),
+(27, 'Dangerous radiation leak\r\n', 'empty\r\n', 1, 1, 1, 1, 5, 5, 5, 5),
+(28, 'Unfavorable climatic conditions\r\n', 'Threat of disruption of work of IT systems due to climatic conditions that have the negative effect on hardware\r\n', 1, 2, 2, 2, 5, 5, 5, 5),
+(29, 'Major events in the environment\r\n', 'empty\r\n', 2, 2, 2, 2, 5, 5, 5, 5),
+(30, 'Threats from space / Electromagnetic storm\r\n', 'Threats of the negative impact of solar radiation (harmful rays) to a satellites and radio wave communication systems - Electromagnetic storm\r\n', 1, 1, 1, 2, 5, 5, 5, 5),
+(31, 'Wildlife\r\n', 'empty\r\n', 2, 2, 2, 2, 5, 5, 5, 5),
+(32, 'Failure of devices or systems\r\n', 'Threat of failure of IT hardware and/or software assets or its parts\r\n', 7, 7, 5, 5, 7, 8, 7, 7),
+(33, 'Failure or disruption of communication links (communication networks)\r\n', 'Threat of failure or malfunction of communications links \r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(34, 'Failure or disruption of main supply\r\n', 'Threat of failure or disruption of supply required for information systems\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(35, 'Failure or disruption of service providers (supply chain)\r\n', 'Threat of failure or disruption of thire party services required for proper operation of information systems\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(36, 'Malfunction of equipment (devices or systems)\r\n', 'Threat of malfunction of IT hardware and/or software assets or its parts\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(37, 'Loss of resources\r\n', 'Unavailability of resources (supply) required for proper operation of information system\r\n', 8, 8, 7, 7, 5, 5, 5, 5),
+(38, 'Absence of personnel\r\n', 'Unavailability of key personnel and their competences\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(39, 'Strike\r\n', 'Unavailability of staff due strike (large scale absence of personnel)\r\n', 1, 2, 2, 2, 5, 5, 5, 5),
+(40, 'Loss of support services\r\n', 'Unavailability of support services required for proper operation of information system\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(41, 'Internet outage\r\n', 'Unavailability of the Internet connection\r\n', 8, 8, 7, 7, 5, 5, 5, 5),
+(42, 'Network outage\r\n', 'Unavailability of communication links\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(43, 'War driving\r\n', 'Threat of locating and possible exploite connection to the wireless network\r\n', 5, 6, 7, 7, 5, 5, 5, 5),
+(44, 'Intercepting compromising emissions\r\n', 'Threat of disclosure transmitted information using interception and analysis of compromising emission\r\n', 5, 6, 7, 7, 5, 5, 5, 5),
+(45, 'Interception of information\r\n', 'Threat of interception of information improperly secured in transmission or improperly actions of staff\r\n', 8, 8, 7, 5, 5, 5, 5, 5),
+(46, 'Interfering radiation\r\n', 'Threat of failure of IT hardware or transmission connection due to electromagnetic induction or electromagnetic radiation emitted from an another source\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(47, 'Replay of messages\r\n', 'Threat in which valid data transmission is maliciously or fraudulently repeated or delayed\r\n', 8, 7, 6, 7, 5, 5, 5, 5),
+(48, 'Network Reconnaissance, Network traffic manipulation and Information gathering\r\n', 'Threat of identifying information about network to find security weaknesses\r\n', 6, 6, 7, 5, 5, 5, 5, 5),
+(49, 'Man in the middle/ Session hijacking \r\n', 'Threats that relay on alters of communication between two parties\r\n', 5, 7, 6, 5, 5, 5, 5, 5),
+(50, 'Identity theft (Identity Fraud/ Account) \r\n', 'Threat of identity theft action\r\n', 8, 9, 8, 7, 5, 5, 5, 5),
+(51, 'Receive of unsolicited E-mail \r\n', 'Threat of receive of unsolicited E-mail that affect for information security and efficienty of work (SPAM)\r\n', 9, 9, 8, 8, 1, 2, 3, 2),
+(52, 'Denial of service\r\n', 'Threat of Deny of service type attacks at information systems/services\r\n', 5, 5, 5, 5, 8, 9, 5, 5),
+(53, 'Malicious code/ software/ activity\r\n', 'Threat of malicious code or software execution\r\n', 8, 7, 7, 8, 9, 8, 8, 7),
+(54, 'Social Engineering\r\n', 'Phishing attacks, Spear phishing attacks\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(55, 'Abuse of Information Leakage\r\n', '? What is difference between others Physical attack (deliberate/ intentional)?\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(56, 'Generation and use of rogue certificates\r\n', 'Threat of use of rogue certificates\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(57, 'Manipulation of hardware and software\r\n', 'Threat of unauthorized manipulation of hardware and software\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(58, 'Manipulation of information\r\n', 'Threat of intentional data manipulation to mislead information systems or somebody or to cover other nefarious activities (loss of integrity of information) \r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(59, 'Misuse of audit tools\r\n', 'Threat of nefarious actions with use of audit tools (discovery security weaknesses in information systems)\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(60, 'Misuse of information/ information systems (including mobile apps)\r\n', 'Threat of nefarious action due to misuse of information / information systems\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(61, 'Unauthorized activities\r\n', 'empty\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(62, 'Unauthorized installation of software\r\n', 'Threat of unauthorized installation of software\r\n', 5, 6, 5, 5, 7, 5, 5, 5),
+(63, 'Compromising confidential information (data breaches)\r\n', 'Threat of data breach \r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(64, 'Hoax\r\n', 'Threat of disruption of work due to False rumor and/or a fake warning\r\n', 4, 2, 3, 3, 5, 5, 5, 5),
+(65, 'Remote activity (execution)\r\n', 'Threat of remote activity over controled IT Assets\r\n', 8, 7, 7, 8, 5, 5, 5, 5),
+(66, 'Targeted attacks (APTs etc.)\r\n', 'Threat of sophisticated targetes attack with combination of many attack techniques\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(67, 'Failed of bussines process\r\n', 'empty\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(68, 'Brute force\r\n', 'empty\r\n', 8, 7, 9, 8, 5, 5, 5, 5),
+(69, 'Abuse of authorizations\r\n', 'empty\r\n', 8, 8, 7, 6, 5, 5, 5, 5),
+(70, 'Violation of laws or regulations / Breach of legislation\r\n', 'Threat of finacial or legal penatly or lost of trust of customers and collaborators due to violation of law or regulations\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(71, 'Failure to meet contractual requirements\r\n', 'Threat of finacial penatly or lost of trust of customers and collaborators due to failure to meet contractual requirements\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(72, 'Unauthorized use of IPR protected resources\r\n', 'Threat of finacial or legal penatly or lost of trust of customers and collaborators due to improper/illegal use of copyrights material\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(73, 'Abuse of personal data\r\n', 'Threat of illegal use personal data\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(74, 'Judiciary decisions/court orders\r\n', 'empty\r\n', 5, 5, 5, 5, 5, 5, 5, 5),
+(75, '', '', NULL, NULL, NULL, NULL, 5, 5, 5, 5);
 
 -- --------------------------------------------------------
 
@@ -1351,8 +1526,7 @@ CREATE TABLE `parsingbpmn_threatagentriskscores` (
 --
 
 INSERT INTO `parsingbpmn_threatagentriskscores` (`id`, `skill`, `size`, `motive`, `opportunity`, `created_at`, `updated_at`, `system_id`) VALUES
-(2, 8, 7, 7, 6, '2022-02-26 17:11:44.040218', '2022-02-26 17:11:44.040218', 3),
-(3, 6, 5, 7, 5, '2022-02-28 15:31:17.525442', '2022-02-28 15:31:17.525442', 4);
+(12, 9, 7, 7, 5, '2022-03-04 08:50:52.909444', '2022-03-04 08:50:52.909444', 11);
 
 -- --------------------------------------------------------
 
@@ -1955,6 +2129,120 @@ INSERT INTO `parsingbpmn_threat_has_control` (`id`, `control_id`, `threat_id`) V
 (419, 19, 73),
 (420, 19, 74);
 
+-- --------------------------------------------------------
+
+--
+-- Struttura della tabella `parsingbpmn_threat_stride`
+--
+
+CREATE TABLE `parsingbpmn_threat_stride` (
+  `id` int(11) NOT NULL,
+  `stride_id` int(11) NOT NULL,
+  `threat_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dump dei dati per la tabella `parsingbpmn_threat_stride`
+--
+
+INSERT INTO `parsingbpmn_threat_stride` (`id`, `stride_id`, `threat_id`) VALUES
+(1, 1, 1),
+(2, 5, 2),
+(13, 5, 3),
+(14, 2, 3),
+(15, 4, 3),
+(16, 5, 4),
+(17, 1, 5),
+(18, 2, 5),
+(19, 4, 5),
+(20, 1, 6),
+(21, 6, 6),
+(22, 2, 6),
+(23, 6, 7),
+(24, 3, 7),
+(25, 5, 8),
+(26, 5, 9),
+(27, 4, 10),
+(28, 1, 10),
+(29, 2, 11),
+(30, 5, 11),
+(31, 4, 12),
+(32, 2, 15),
+(33, 5, 15),
+(34, 2, 16),
+(35, 6, 16),
+(36, 5, 16),
+(37, 5, 17),
+(38, 2, 18),
+(39, 5, 19),
+(40, 5, 20),
+(41, 5, 21),
+(42, 5, 22),
+(43, 5, 23),
+(44, 5, 24),
+(45, 5, 26),
+(46, 5, 28),
+(47, 5, 29),
+(48, 5, 30),
+(49, 5, 31),
+(50, 5, 32),
+(51, 5, 33),
+(52, 5, 34),
+(53, 5, 35),
+(54, 2, 36),
+(55, 4, 36),
+(56, 5, 37),
+(57, 3, 38),
+(58, 5, 39),
+(59, 5, 40),
+(60, 5, 41),
+(61, 5, 42),
+(62, 1, 43),
+(63, 4, 43),
+(64, 1, 44),
+(65, 1, 45),
+(66, 1, 46),
+(67, 1, 47),
+(68, 1, 48),
+(69, 1, 49),
+(70, 2, 49),
+(71, 1, 50),
+(72, 1, 51),
+(73, 5, 52),
+(74, 5, 53),
+(75, 1, 53),
+(76, 2, 53),
+(77, 3, 53),
+(78, 4, 53),
+(79, 6, 53),
+(80, 1, 54),
+(81, 4, 55),
+(82, 6, 56),
+(83, 2, 57),
+(84, 2, 58),
+(85, 2, 59),
+(86, 5, 59),
+(87, 1, 59),
+(88, 4, 60),
+(89, 2, 60),
+(90, 6, 61),
+(91, 6, 62),
+(92, 4, 63),
+(93, 2, 64),
+(94, 6, 65),
+(95, 1, 66),
+(96, 2, 66),
+(97, 3, 66),
+(98, 4, 66),
+(99, 5, 66),
+(100, 6, 66),
+(101, 5, 67),
+(102, 6, 68),
+(103, 6, 69),
+(104, 3, 70),
+(105, 4, 73),
+(106, 6, 72);
+
 --
 -- Indici per le tabelle scaricate
 --
@@ -2075,6 +2363,15 @@ ALTER TABLE `parsingbpmn_control`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indici per le tabelle `parsingbpmn_overallrisk`
+--
+ALTER TABLE `parsingbpmn_overallrisk`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `parsingbpmn_overallr_asset_id_a90dd13a_fk_parsingbp` (`asset_id`),
+  ADD KEY `parsingbpmn_overallr_process_id_d6476854_fk_parsingbp` (`process_id`),
+  ADD KEY `parsingbpmn_overallr_system_id_77a4c856_fk_parsingbp` (`system_id`);
+
+--
 -- Indici per le tabelle `parsingbpmn_process`
 --
 ALTER TABLE `parsingbpmn_process`
@@ -2093,8 +2390,9 @@ ALTER TABLE `parsingbpmn_reply`
 ALTER TABLE `parsingbpmn_risk`
   ADD PRIMARY KEY (`id`),
   ADD KEY `parsingbpmn_risk_asset_id_e1d75156_fk_parsingbpmn_asset_id` (`asset_id`),
+  ADD KEY `parsingbpmn_risk_process_id_e7df9970_fk_parsingbpmn_process_id` (`process_id`),
   ADD KEY `parsingbpmn_risk_system_id_14dbe4d1_fk_parsingbpmn_system_id` (`system_id`),
-  ADD KEY `parsingbpmn_risk_threat_id_046e66c4_fk_parsingbpmn_threat_id` (`threat_id`);
+  ADD KEY `parsingbpmn_risk_threat_stride_id_b393f1a9_fk_parsingbp` (`threat_stride_id`);
 
 --
 -- Indici per le tabelle `parsingbpmn_stride`
@@ -2108,7 +2406,8 @@ ALTER TABLE `parsingbpmn_stride`
 ALTER TABLE `parsingbpmn_strideimpactrecord`
   ADD PRIMARY KEY (`id`),
   ADD KEY `parsingbpmn_strideim_stride_id_ffcd0aa5_fk_parsingbp` (`stride_id`),
-  ADD KEY `parsingbpmn_strideim_system_id_ff099720_fk_parsingbp` (`system_id`);
+  ADD KEY `parsingbpmn_strideim_system_id_ff099720_fk_parsingbp` (`system_id`),
+  ADD KEY `parsingbpmn_strideim_process_id_a5e6c918_fk_parsingbp` (`process_id`);
 
 --
 -- Indici per le tabelle `parsingbpmn_system`
@@ -2196,6 +2495,14 @@ ALTER TABLE `parsingbpmn_threat_has_control`
   ADD KEY `parsingbpmn_threat_h_threat_id_e0101e51_fk_parsingbp` (`threat_id`);
 
 --
+-- Indici per le tabelle `parsingbpmn_threat_stride`
+--
+ALTER TABLE `parsingbpmn_threat_stride`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `parsingbpmn_threat_s_stride_id_7c72a7c7_fk_parsingbp` (`stride_id`),
+  ADD KEY `parsingbpmn_threat_s_threat_id_d0c8cc23_fk_parsingbp` (`threat_id`);
+
+--
 -- AUTO_INCREMENT per le tabelle scaricate
 --
 
@@ -2215,7 +2522,7 @@ ALTER TABLE `auth_group_permissions`
 -- AUTO_INCREMENT per la tabella `auth_permission`
 --
 ALTER TABLE `auth_permission`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=125;
 
 --
 -- AUTO_INCREMENT per la tabella `auth_user`
@@ -2245,31 +2552,31 @@ ALTER TABLE `django_admin_log`
 -- AUTO_INCREMENT per la tabella `django_content_type`
 --
 ALTER TABLE `django_content_type`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT per la tabella `django_migrations`
 --
 ALTER TABLE `django_migrations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_asset`
 --
 ALTER TABLE `parsingbpmn_asset`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=441;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=756;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_asset_has_attribute`
 --
 ALTER TABLE `parsingbpmn_asset_has_attribute`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=270;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=432;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_asset_type`
 --
 ALTER TABLE `parsingbpmn_asset_type`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_attribute`
@@ -2290,10 +2597,16 @@ ALTER TABLE `parsingbpmn_control`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
+-- AUTO_INCREMENT per la tabella `parsingbpmn_overallrisk`
+--
+ALTER TABLE `parsingbpmn_overallrisk`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=89;
+
+--
 -- AUTO_INCREMENT per la tabella `parsingbpmn_process`
 --
 ALTER TABLE `parsingbpmn_process`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_reply`
@@ -2305,7 +2618,7 @@ ALTER TABLE `parsingbpmn_reply`
 -- AUTO_INCREMENT per la tabella `parsingbpmn_risk`
 --
 ALTER TABLE `parsingbpmn_risk`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1211;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_stride`
@@ -2317,19 +2630,19 @@ ALTER TABLE `parsingbpmn_stride`
 -- AUTO_INCREMENT per la tabella `parsingbpmn_strideimpactrecord`
 --
 ALTER TABLE `parsingbpmn_strideimpactrecord`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1017;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_system`
 --
 ALTER TABLE `parsingbpmn_system`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_system_threatagent`
 --
 ALTER TABLE `parsingbpmn_system_threatagent`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_tacategoryattribute`
@@ -2353,7 +2666,7 @@ ALTER TABLE `parsingbpmn_tareplycategory`
 -- AUTO_INCREMENT per la tabella `parsingbpmn_threat`
 --
 ALTER TABLE `parsingbpmn_threat`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_threatagentattribute`
@@ -2377,7 +2690,7 @@ ALTER TABLE `parsingbpmn_threatagentquestion`
 -- AUTO_INCREMENT per la tabella `parsingbpmn_threatagentriskscores`
 --
 ALTER TABLE `parsingbpmn_threatagentriskscores`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_threat_has_attribute`
@@ -2390,6 +2703,12 @@ ALTER TABLE `parsingbpmn_threat_has_attribute`
 --
 ALTER TABLE `parsingbpmn_threat_has_control`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=421;
+
+--
+-- AUTO_INCREMENT per la tabella `parsingbpmn_threat_stride`
+--
+ALTER TABLE `parsingbpmn_threat_stride`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
 
 --
 -- Limiti per le tabelle scaricate
@@ -2451,6 +2770,14 @@ ALTER TABLE `parsingbpmn_attribute`
   ADD CONSTRAINT `parsingbpmn_attribut_attribute_value_id_bfcbe512_fk_parsingbp` FOREIGN KEY (`attribute_value_id`) REFERENCES `parsingbpmn_attribute_value` (`id`);
 
 --
+-- Limiti per la tabella `parsingbpmn_overallrisk`
+--
+ALTER TABLE `parsingbpmn_overallrisk`
+  ADD CONSTRAINT `parsingbpmn_overallr_asset_id_a90dd13a_fk_parsingbp` FOREIGN KEY (`asset_id`) REFERENCES `parsingbpmn_asset` (`id`),
+  ADD CONSTRAINT `parsingbpmn_overallr_process_id_d6476854_fk_parsingbp` FOREIGN KEY (`process_id`) REFERENCES `parsingbpmn_process` (`id`),
+  ADD CONSTRAINT `parsingbpmn_overallr_system_id_77a4c856_fk_parsingbp` FOREIGN KEY (`system_id`) REFERENCES `parsingbpmn_system` (`id`);
+
+--
 -- Limiti per la tabella `parsingbpmn_process`
 --
 ALTER TABLE `parsingbpmn_process`
@@ -2461,13 +2788,15 @@ ALTER TABLE `parsingbpmn_process`
 --
 ALTER TABLE `parsingbpmn_risk`
   ADD CONSTRAINT `parsingbpmn_risk_asset_id_e1d75156_fk_parsingbpmn_asset_id` FOREIGN KEY (`asset_id`) REFERENCES `parsingbpmn_asset` (`id`),
+  ADD CONSTRAINT `parsingbpmn_risk_process_id_e7df9970_fk_parsingbpmn_process_id` FOREIGN KEY (`process_id`) REFERENCES `parsingbpmn_process` (`id`),
   ADD CONSTRAINT `parsingbpmn_risk_system_id_14dbe4d1_fk_parsingbpmn_system_id` FOREIGN KEY (`system_id`) REFERENCES `parsingbpmn_system` (`id`),
-  ADD CONSTRAINT `parsingbpmn_risk_threat_id_046e66c4_fk_parsingbpmn_threat_id` FOREIGN KEY (`threat_id`) REFERENCES `parsingbpmn_threat` (`id`);
+  ADD CONSTRAINT `parsingbpmn_risk_threat_stride_id_b393f1a9_fk_parsingbp` FOREIGN KEY (`threat_stride_id`) REFERENCES `parsingbpmn_threat_stride` (`id`);
 
 --
 -- Limiti per la tabella `parsingbpmn_strideimpactrecord`
 --
 ALTER TABLE `parsingbpmn_strideimpactrecord`
+  ADD CONSTRAINT `parsingbpmn_strideim_process_id_a5e6c918_fk_parsingbp` FOREIGN KEY (`process_id`) REFERENCES `parsingbpmn_process` (`id`),
   ADD CONSTRAINT `parsingbpmn_strideim_stride_id_ffcd0aa5_fk_parsingbp` FOREIGN KEY (`stride_id`) REFERENCES `parsingbpmn_stride` (`id`),
   ADD CONSTRAINT `parsingbpmn_strideim_system_id_ff099720_fk_parsingbp` FOREIGN KEY (`system_id`) REFERENCES `parsingbpmn_system` (`id`);
 
@@ -2518,6 +2847,13 @@ ALTER TABLE `parsingbpmn_threat_has_attribute`
 ALTER TABLE `parsingbpmn_threat_has_control`
   ADD CONSTRAINT `parsingbpmn_threat_h_control_id_7388a9d5_fk_parsingbp` FOREIGN KEY (`control_id`) REFERENCES `parsingbpmn_control` (`id`),
   ADD CONSTRAINT `parsingbpmn_threat_h_threat_id_e0101e51_fk_parsingbp` FOREIGN KEY (`threat_id`) REFERENCES `parsingbpmn_threat` (`id`);
+
+--
+-- Limiti per la tabella `parsingbpmn_threat_stride`
+--
+ALTER TABLE `parsingbpmn_threat_stride`
+  ADD CONSTRAINT `parsingbpmn_threat_s_stride_id_7c72a7c7_fk_parsingbp` FOREIGN KEY (`stride_id`) REFERENCES `parsingbpmn_stride` (`id`),
+  ADD CONSTRAINT `parsingbpmn_threat_s_threat_id_d0c8cc23_fk_parsingbp` FOREIGN KEY (`threat_id`) REFERENCES `parsingbpmn_threat` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

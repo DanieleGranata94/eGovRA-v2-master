@@ -226,6 +226,9 @@ class BpmnDiagramGraphImport(object):
         elif tag_name == consts.Consts.textAnnotation:
             BpmnDiagramGraphImport.import_textAnnotation(diagram_graph, process_id, process_attributes,
                                                          element)
+        elif tag_name == consts.Consts.dataObject:
+            BpmnDiagramGraphImport.import_data_object_to_graph(diagram_graph, process_id, process_attributes,
+                                                         element)
 
 
 
