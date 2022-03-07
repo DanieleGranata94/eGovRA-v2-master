@@ -109,7 +109,7 @@ class Consts(object):
 
     #data object
     dataObject = "dataObjectReference"
-    dataObject2 = "dataOutputAssociation"
+    dataOutputAssociation = "dataOutputAssociation"
 
 
     grid_column_width = 2

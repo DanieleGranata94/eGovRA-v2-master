@@ -46,6 +46,8 @@ urlpatterns = [
     path('StrideImpact/<int:systemId>/<int:processId>/<int:assetId>', views.StrideImpact, name='StrideImpact'),
     path('StrideImpact_Result/<int:systemId>/<int:processId>/', views.StrideImpact_Result, name='StrideImpact_Result'),
     path('risk_analysis/<int:systemId>/<int:processId>/<int:assetId>', views.risk_analysis, name='risk_analysis'),
+    path('process_data_object_input/<int:systemId>/<int:processId>', views.process_data_object_input, name='process_data_object_input'),
+    path('save_dataobject/<int:systemId>/<int:processId>', views.save_dataobject, name='save_dataobject'),
 
 ]
 

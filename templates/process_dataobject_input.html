@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+
+
+
+{% block content %}
+    <h1>Asset type enrichment</h1>
+    <p style="font-family: 'Times New Roman';font-size: medium">
+        It is necessary to report the information associated with the type of asset,
+        where this has not been explicitly indicated in the bpmn associated with the process in question.
+    </p>
+    {% csrf_token %}
+        <p>Quali sono i dati trattati dal processo {{ processId }}</p>
+
+
+    <form method="POST" action="{% url 'save_dataobject' systemId=systemId processId=processId %}">
+
+        <input type="submit" value="Save Data"/>
+    </form>
+
+
+{% endblock %}
+

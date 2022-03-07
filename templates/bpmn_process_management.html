@@ -57,7 +57,7 @@
                     </a>
                 </td>
                 <td style="text-align: center">
-                    <form method="POST" action="{% url 'process_view_task_type'  systemId=systemId processId=process.0.pk %}">
+                    <form method="POST" action="{% url 'process_data_object_input'  systemId=systemId processId=process.0.pk %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-primary btn-sm">Select process</button>
                     </form>

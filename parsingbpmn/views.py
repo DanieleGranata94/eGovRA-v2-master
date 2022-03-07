@@ -1562,3 +1562,13 @@ def risk_analysis_result(request, systemId, processId):
                    'repudiation': RepOverallRiskString,
                    'informationdis': InfOverallRiskString,
                    'dos': DoSOverallRiskString, 'eop': EoPOverallRiskString})
+
+def process_data_object_input(request,systemId,processId):
+    return render(request, 'process_dataobject_input.html',
+                  {"systemId": systemId, "processId": processId})
+
+
+def save_dataobject(request,systemId,processId):
+    return render(request, 'process_dataobject_enrichment.html',
+                  {"systemId": systemId, "processId": processId})
+

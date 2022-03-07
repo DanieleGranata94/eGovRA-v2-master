@@ -229,6 +229,10 @@ class BpmnDiagramGraphImport(object):
         elif tag_name == consts.Consts.dataObject:
             BpmnDiagramGraphImport.import_data_object_to_graph(diagram_graph, process_id, process_attributes,
                                                          element)
+        elif tag_name == consts.Consts.dataOutputAssociation:
+            BpmnDiagramGraphImport.import_dataOutputAssociation(diagram_graph, process_id, process_attributes,
+                                                           element)
+
 
 
 
@@ -810,7 +814,6 @@ class BpmnDiagramGraphImport(object):
     @classmethod
     def import_textAnnotation(cls, diagram_graph, process_id, process_attributes, element):
         textAnnotations=[]
-
         element_id = element.getAttribute(consts.Consts.id)
         diagram_graph.add_node(element_id)
         diagram_graph.nodes[element_id][consts.Consts.id] = element_id
@@ -825,6 +828,24 @@ class BpmnDiagramGraphImport(object):
                 textAnn.append(text)
                 textAnnotations.append(textAnn)
         diagram_graph.nodes[element_id][consts.Consts.textAnnotation] = textAnnotations
+
+    @classmethod
+    def import_dataOutputAssociation(cls, diagram_graph, process_id, element):
+        dataOutputAssociation=[]
+        element_id = element.getAttribute(consts.Consts.id)
+        diagram_graph.add_node(element_id)
+        diagram_graph.nodes[element_id][consts.Consts.id] = element_id
+        diagram_graph.nodes[element_id][consts.Consts.type] = utils.BpmnImportUtils.remove_namespace_from_tag_name(element.tagName)
+        diagram_graph.nodes[element_id][consts.Consts.process] = process_id
+        textAnn=[]
+        for child in element.childNodes:
+            if type(child) is Element:
+                target_ref = list(element.attributes.values())[0].value
+                text=child.firstChild.nodeValue
+                textAnn.append(target_ref)
+                textAnn.append(text)
+                dataOutputAssociation.append(textAnn)
+        diagram_graph.nodes[element_id][consts.Consts.textAnnotation] = dataOutputAssociation
 
 
 
