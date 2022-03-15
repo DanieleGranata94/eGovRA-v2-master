@@ -353,6 +353,8 @@ class BpmnDiagramGraphExport(object):
             BpmnDiagramGraphExport.export_throw_event_info(params, output_element)
         elif node_type == consts.Consts.boundary_event:
             BpmnDiagramGraphExport.export_boundary_event_info(params, output_element)
+        elif node_type == consts.Consts.textAnnotation:
+            BpmnDiagramGraphExport.export_textAnnotation(params, output_element)QUI
 
     @staticmethod
     def export_node_di_data(node_id, params, plane):

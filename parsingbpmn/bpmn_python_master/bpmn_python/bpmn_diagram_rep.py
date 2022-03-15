@@ -248,6 +248,40 @@ class BpmnDiagramGraph(object):
 
 
 
+    def add_textAnnotation_flow_node_to_diagram(self, process_id, text ,connectedTask, node_id=None):
+        """
+        (process_id,text connected_task, node_id,)
+        Helper function that adds a new Flow Node to diagram. It is used to add a new node of specified type.
+        Adds a basic information inherited from Flow Node type.
+
+        :param process_id: string object. ID of parent process,
+        :param node_type: string object. Represents type of BPMN node passed to method,
+        :param name: string object. Name of the node,
+        :param node_id: string object. ID of node. Default value - None.
+        """
+        letters = string.ascii_letters
+        result_str = ''.join(random.choice(letters) for i in range(9))
+
+
+        if node_id is None:
+            node_id = "TextAnnotation_"+ result_str
+        self.diagram_graph.add_node(node_id)
+        self.diagram_graph._node[node_id][consts.Consts.id] = node_id
+        self.diagram_graph._node[node_id][consts.Consts.type] = consts.Consts.textAnnotation
+        #self.diagram_graph._node[node_id][consts.Consts.node_name] = name
+        self.diagram_graph._node[node_id][consts.Consts.incoming_flow] = []
+        self.diagram_graph._node[node_id][consts.Consts.outgoing_flow] = []
+        self.diagram_graph._node[node_id][consts.Consts.process] = process_id
+
+        # Adding some dummy constant values
+        self.diagram_graph._node[node_id][consts.Consts.width] = "100"
+        self.diagram_graph._node[node_id][consts.Consts.height] = "100"
+        self.diagram_graph._node[node_id][consts.Consts.x] = "100"
+        self.diagram_graph._node[node_id][consts.Consts.y] = "100"
+        return node_id, self.diagram_graph._node[node_id]
+
+
+
     def get_random_string(length):
         letters = string.ascii_letters
         result_str = ''.join(random.choice(letters) for i in range(length))
@@ -263,8 +297,6 @@ class BpmnDiagramGraph(object):
         :param name: string object. Name of the node,
         :param node_id: string object. ID of node. Default value - None.
         """
-
-
         letters = string.ascii_letters
         result_str = ''.join(random.choice(letters) for i in range(9))
 
@@ -300,6 +332,22 @@ class BpmnDiagramGraph(object):
         :return: a tuple, where first value is task ID, second a reference to created object.
         """
         return self.add_flow_node_to_diagram(process_id, consts.Consts.task, task_name, node_id)
+
+    def add_textAnnotation_to_diagram(self, process_id, text, connected_task="", node_id=None):
+        """
+        Adds a TextAnnotation element to BPMN diagram.
+        User-defined attributes:
+
+        - name
+
+
+        :param text: text related to TextAnnotation:
+        :param process_id: string object. ID of parent process,
+        :param connected_task: string object. Name of connected task
+        :param node_id: string object. ID of node. Default value - None.
+        :return: a tuple, where first value is task ID, second a reference to created object.
+        """
+        return self.add_textAnnotation_flow_node_to_diagram(process_id,text, connected_task, node_id)
 
     def add_subprocess_to_diagram(self, process_id, subprocess_name, is_expanded=False, triggered_by_event=False,
                                   node_id=None):
