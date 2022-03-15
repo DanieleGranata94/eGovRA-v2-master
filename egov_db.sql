@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Creato il: Mar 07, 2022 alle 16:27
+-- Creato il: Mar 15, 2022 alle 18:17
 -- Versione del server: 10.4.14-MariaDB
 -- Versione PHP: 7.2.34
 
@@ -393,7 +393,29 @@ INSERT INTO `parsingbpmn_asset` (`id`, `name`, `bpmn_id`, `asset_type_id`, `proc
 (752, 'Download Certificate', 'Activity_1lh76my', 3, 69, '860:140:100:80'),
 (753, 'Acquire certificate request', 'Activity_075eaka', 2, 69, '450:380:100:80'),
 (754, 'Certificate processing', 'Activity_0yo8nd0', 5, 69, '590:380:100:80'),
-(755, 'Notify certification ready', 'Activity_11l7oi5', 1, 69, '720:380:100:80');
+(755, 'Notify certification ready', 'Activity_11l7oi5', 1, 69, '720:380:100:80'),
+(784, 'Compile certificate request', 'Activity_0e44ssw', 3, 74, '310:325:100:80'),
+(785, 'Certificate request', 'Activity_0m5vgkb', 1, 74, '450:325:100:80'),
+(786, 'Recieve notification', 'Activity_15a5z8l', 2, 74, '720:315:100:80'),
+(787, 'Download Certificate', 'Activity_1lh76my', 3, 74, '860:315:100:80'),
+(788, 'Acquire certificate request', 'Activity_075eaka', 2, 74, '450:560:100:80'),
+(789, 'Certificate processing', 'Activity_0yo8nd0', 5, 74, '590:560:100:80'),
+(790, 'Notify certification ready', 'Activity_11l7oi5', 1, 74, '720:560:100:80'),
+(791, 'Compile certificate request', 'Activity_0e44ssw', 3, 75, '310:320:100:80'),
+(792, 'Certificate request', 'Activity_0m5vgkb', 1, 75, '450:320:100:80'),
+(793, 'Recieve notification', 'Activity_15a5z8l', 2, 75, '720:310:100:80'),
+(794, 'Download Certificate', 'Activity_1lh76my', 3, 75, '860:310:100:80'),
+(795, 'Compile certificate request', 'Activity_0e44ssw', 3, 76, '310:320:100:80'),
+(796, 'Certificate request', 'Activity_0m5vgkb', 1, 76, '450:320:100:80'),
+(797, 'Recieve notification', 'Activity_15a5z8l', 2, 76, '720:310:100:80'),
+(798, 'Download Certificate', 'Activity_1lh76my', 3, 76, '860:310:100:80'),
+(799, 'Notifications', 'DataObjectReference_19l4554', 9, 76, '852:215:36:50'),
+(800, 'Certificate', 'DataObjectReference_0wv3x94', 9, 76, '602:215:36:50'),
+(801, 'Personal', 'DataObjectReference_0k0pelp', 9, 76, '422:205:36:50'),
+(802, 'Acquire certificate request', 'Activity_075eaka', 2, 76, '450:550:100:80'),
+(803, 'Certificate processing', 'Activity_0yo8nd0', 5, 76, '590:550:100:80'),
+(804, 'Notify certification ready', 'Activity_11l7oi5', 1, 76, '720:550:100:80'),
+(805, 'Test', 'DataObjectReference_hEUZTUe', 9, 76, '');
 
 -- --------------------------------------------------------
 
@@ -450,7 +472,8 @@ INSERT INTO `parsingbpmn_asset_type` (`id`, `name`, `description`) VALUES
 (4, 'Manual task', 'A Manual Task is a Task that is performed physically.'),
 (5, 'Service task', 'A Service Task is a Task that uses a Web service, an automated application, or other kinds of service in completing the task.'),
 (6, 'Script task', 'A Script Task is executed by a business process engine. The task defines a script that the engine can interpret. When the task begin, the engine will execute the script. The Task will be completed when the script is completed.'),
-(7, 'Business rule task', 'It provides a mechanism for a process to provide input to a Business Rules Engine and then obtain the output provided by the Business Rules Engine. As for service and script task, it is a task without human interaction.');
+(7, 'Business rule task', 'It provides a mechanism for a process to provide input to a Business Rules Engine and then obtain the output provided by the Business Rules Engine. As for service and script task, it is a task without human interaction.'),
+(9, 'DataObject', 'Data Objects may represent e.g. documents used in a process, both in physical and digital form. They look like a page with folded top right corner');
 
 -- --------------------------------------------------------
 
@@ -603,7 +626,10 @@ CREATE TABLE `parsingbpmn_process` (
 
 INSERT INTO `parsingbpmn_process` (`id`, `name`, `xml`, `system_id`) VALUES
 (68, 'Municipality', 'processes/xml/bpmn_1.0_alxG2XZ.bpmn', 8),
-(69, 'Municipality', 'processes/xml/bpmn_1.0_kYQIAXL.bpmn', 11);
+(69, 'Municipality', 'processes/xml/bpmn_1.0_kYQIAXL.bpmn', 11),
+(74, 'Municipality2', 'processes/xml/diagram_3.bpmn', 11),
+(75, 'DataObjectExample', 'processes/xml/dataobjsu2task.bpmn', 11),
+(76, 'DataObjectExample', 'processes/xml/dataobjsu2task_3EgHlF4.bpmn', 11);
 
 -- --------------------------------------------------------
 
@@ -2564,19 +2590,19 @@ ALTER TABLE `django_migrations`
 -- AUTO_INCREMENT per la tabella `parsingbpmn_asset`
 --
 ALTER TABLE `parsingbpmn_asset`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=756;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=806;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_asset_has_attribute`
 --
 ALTER TABLE `parsingbpmn_asset_has_attribute`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=432;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=439;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_asset_type`
 --
 ALTER TABLE `parsingbpmn_asset_type`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_attribute`
@@ -2606,7 +2632,7 @@ ALTER TABLE `parsingbpmn_overallrisk`
 -- AUTO_INCREMENT per la tabella `parsingbpmn_process`
 --
 ALTER TABLE `parsingbpmn_process`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_reply`
