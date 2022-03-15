@@ -1,4 +1,5 @@
 import csv
+import json
 from datetime import datetime
 
 from django.core.files.storage import FileSystemStorage
@@ -8,12 +9,14 @@ from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from openpyxl import Workbook
 from openpyxl.styles import Font, Border, Side
+from django.http import JsonResponse
 
+from .bpmn_python_master.bpmn_python.bpmn_python_consts import Consts
 from .forms import ProcessForm, SystemForm
 from .models import Process, Asset, System, Asset_has_attribute, Attribute, Asset_type, Attribute_value, \
     Threat_has_attribute, Threat_has_control, ThreatAgentRiskScores, TACategoryAttribute, ThreatAgentCategory, \
     System_ThreatAgent, TAReplies_Question, TAReplyCategory, Reply, ThreatAgentQuestion, StrideImpactRecord, Stride, \
-    Threat_Stride, Risk, OverallRisk
+    Threat_Stride, Risk, OverallRisk, DataObject
 from .bpmn_python_master.bpmn_python import bpmn_diagram_rep as diagram
 
 
@@ -56,7 +59,6 @@ def bpmn_process_management(request, systemId):
             dataOBJ = []
             dataOutput = []
 
-
             for tuple in lista:
                 for dizionario in tuple:
                     if type(dizionario) is dict:
@@ -74,16 +76,9 @@ def bpmn_process_management(request, systemId):
                     if type(dizionario) is dict:
                         try:
                             if dizionario['type'].lower().startswith("dataobject"):
-                                dataOBJ.append(dizionario)
+                                dataOBJ.append(dizionario["node_name"])
                         except KeyError:
                             print()
-                    if type(dizionario) is dict:
-                        try:
-                            if dizionario['type'].lower().startswith("dataOutputAssociation"):
-                                dataOutput.append(dizionario["node_name"])
-                        except KeyError:
-                            print()
-
 
             print(dataOBJ)
             print(dataOutput)
@@ -99,6 +94,10 @@ def bpmn_process_management(request, systemId):
                             y = dizionario["y"]
                             width = dizionario["width"]
                             height = dizionario["height"]
+                            dataOutput = dizionario["dataOutputAssociation"]
+                            target_refOutput = dizionario["targetRef"]
+
+                            # print(dataOutput)
                             asset_type = None
                             position = x + ":" + y + ":" + width + ":" + height
                             if dizionario['type'].startswith("send"):
@@ -191,8 +190,24 @@ def bpmn_process_management(request, systemId):
                         elif dizionario['type'].endswith("task"):
                             asset = Asset(name=dizionario['node_name'], process=Process.objects.get(pk=pk))
                             asset.save()
+                        elif dizionario['type'].lower().startswith("dataobjectreference"):
+                            asset_type = Asset_type.objects.get(name="DataObject")
+                            try:
+                                x = dizionario["x"]
+                                y = dizionario["y"]
+                                width = dizionario["width"]
+                                height = dizionario["height"]
+                                position = x + ":" + y + ":" + width + ":" + height
+                            except KeyError:
+                                print()
+                            asset = Asset(name=dizionario['node_name'], bpmn_id=dizionario["id"], position=position,
+                                          process=Process.objects.get(pk=pk), asset_type=asset_type)
+                            print(asset, "aseeeeeeet")
 
-            return redirect('process_view_task_type', systemId, pk)
+                            asset.save()
+
+
+            return redirect('process_data_object_input', systemId, pk)
     else:
         form = ProcessForm()
     processes = Process.objects.filter(system=System.objects.get(pk=pk))
@@ -224,12 +239,21 @@ def delete_process(request, systemId, processId):
     return redirect('bpmn_process_management', systemId)
 
 
+def delete_Dataobj(request, systemId, processID, assetId):
+    if request.method == 'POST':
+        asset = Asset_type.objects.get(id=assetId)
+        asset.delete()
+        asset = Asset_type.objects.get(id=assetId + 1)
+        asset.delete()
+    return redirect('process_data_object_input', systemId)
+
+
 def process_view_task_type(request, systemId, processId):
     pk = processId
     task_list = Asset.objects.filter(process=Process.objects.get(pk=pk))
     check_attribute = False
     for task in task_list:
-        if task.asset_type == None:
+        if task.asset_type == None and task.asset_type.lower().endswith("task"):
             check_attribute = True
     if check_attribute == True:
         asset_type = Asset_type.objects.all()
@@ -267,11 +291,13 @@ def task_type_enrichment(request, systemId, processId):
 
 
 def process_view_attribute(request, systemId, processId):
-    task_list = Asset.objects.filter(process=Process.objects.get(pk=processId))
+    task_list = Asset.objects.filter(process=Process.objects.get(pk=processId)).exclude(asset_type=8)
+    # print(task_list)
     check_attribute = False
     for task in task_list:
         if not Asset_has_attribute.objects.filter(asset=task):
             check_attribute = True
+
     if check_attribute == True:
         task_attributes = []
         list_attributes = []
@@ -585,7 +611,7 @@ def threat_modeling_view(request, systemId, processId):
     try:
         if (ThreatAgentRiskScores.objects.get(
                 system=System.objects.get(id=systemId)) and StrideImpactRecord.objects.filter(
-                process=Process.objects.get(id=processId))):
+            process=Process.objects.get(id=processId))):
             result_available = True
     except:
         result_available = False
@@ -1533,27 +1559,25 @@ def risk_analysis_result(request, systemId, processId):
         maxEoP = EoPRisks[0]
 
         for i in range(len(SpoofingRisks)):
-            if(SpoofingRisks[i]>=maxSpoofing):
-                maxSpoofing=SpoofingRisks[i]
+            if (SpoofingRisks[i] >= maxSpoofing):
+                maxSpoofing = SpoofingRisks[i]
             if (TamperingRisks[i] >= maxTampering):
                 maxTampering = TamperingRisks[i]
-            if(RepudiationRisks[i]>=maxRep):
-                maxRep=RepudiationRisks[i]
+            if (RepudiationRisks[i] >= maxRep):
+                maxRep = RepudiationRisks[i]
             if (InformationDisclosureRisks[i] >= maxInf):
                 maxInf = InformationDisclosureRisks[i]
-            if(DoSRisks[i]>=maxDoS):
-                maxDoS=DoSRisks[i]
+            if (DoSRisks[i] >= maxDoS):
+                maxDoS = DoSRisks[i]
             if (EoPRisks[i] >= maxEoP):
                 maxEoP = EoPRisks[i]
 
-
-
-    SpoofingOverallRiskString= calculate_severity_per_stride(maxSpoofing)
-    TamperingOverallRiskString= calculate_severity_per_stride(maxTampering)
-    RepOverallRiskString= calculate_severity_per_stride(maxRep)
-    InfOverallRiskString= calculate_severity_per_stride(maxInf)
-    DoSOverallRiskString= calculate_severity_per_stride(maxDoS)
-    EoPOverallRiskString= calculate_severity_per_stride(maxEoP)
+    SpoofingOverallRiskString = calculate_severity_per_stride(maxSpoofing)
+    TamperingOverallRiskString = calculate_severity_per_stride(maxTampering)
+    RepOverallRiskString = calculate_severity_per_stride(maxRep)
+    InfOverallRiskString = calculate_severity_per_stride(maxInf)
+    DoSOverallRiskString = calculate_severity_per_stride(maxDoS)
+    EoPOverallRiskString = calculate_severity_per_stride(maxEoP)
 
     return render(request, 'risk_analysis_result.html',
                   {"processName": process, "systemId": systemId, "processId": processId,
@@ -1563,12 +1587,81 @@ def risk_analysis_result(request, systemId, processId):
                    'informationdis': InfOverallRiskString,
                    'dos': DoSOverallRiskString, 'eop': EoPOverallRiskString})
 
-def process_data_object_input(request,systemId,processId):
+
+def process_data_object_input(request, systemId, processId):
+    print(request.POST.get)
+    nameprocess = Process.objects.get(pk=processId)
+    asset_type = Asset_type.objects.get(name="DataObject")
+
+    lista = Asset.objects.filter(process=Process.objects.get(pk=processId), asset_type=asset_type).exclude(name="")
+    list_data = []
+    for tuple in lista:
+        list_data.append(tuple)
     return render(request, 'process_dataobject_input.html',
-                  {"systemId": systemId, "processId": processId})
+                  {"systemId": systemId, "processId": processId, "list_data": list_data})
+
+    for tuple in lista:
+        list_data.append(tuple)
+
+    return render(request, 'process_dataobject_input.html',
+                  {"systemId": systemId, "processId": processId, "list_data": list_data})
 
 
-def save_dataobject(request,systemId,processId):
+
+
+
+
+def save_dataobject(request, systemId, processId):
+    nameprocess = Process.objects.get(pk=processId)
+    asset_type = Asset_type.objects.get(name="DataObject")
+
+    last_process = Process.objects.latest('id')
+    bpmn_graph = diagram.BpmnDiagramGraph()
+    pk = last_process.pk
+    bpmn_graph.load_diagram_from_xml_file(Process.objects.get(pk=pk).xml)
+    lista2 = bpmn_graph.get_nodes()
+    lista = Asset.objects.filter(process=Process.objects.get(pk=processId), asset_type=asset_type).exclude(name="")
+    list_data = []
+    task_with_data = []
+    post_data = dict(request.POST.lists())
+    temp = []
+
+    for tmp in post_data:
+        temp.append(tmp)
+    #print(temp)
+    #print(len(lista), "json")
+    for dato in range(len(lista),len(post_data)-1):
+        dataref = "DataObjectReference_" + get_random_string(7)
+        # dataobj = "DataObject_" + get_random_string(7)
+        asset_type = Asset_type.objects.get(name="DataObject")
+
+        asset = Asset(name=temp[dato], bpmn_id=dataref, position="",
+                      process=Process.objects.get(pk=processId), asset_type=asset_type)
+        asset.save()
+    for tuple in lista2:
+        for dizionario in tuple:
+            if type(dizionario) is dict:
+                if dizionario['type'].lower().endswith("task"):
+                    if dizionario['dataOutputAssociation'] != "":
+                        key = dizionario["targetRef"]["targetRef"]
+                        #data_name=Asset.objects.filter(bpmn_id=key)
+                        for tuple2 in lista2:
+                            for dizionario2 in tuple2:
+                                if type(dizionario2) is dict:
+                                    #print(dizionario2["id"], dizionario["targetRef"]["targetRef"])
+                                    if dizionario2['id'] == key:
+                                        keydata = dizionario2["node_name"]
+                                        print(keydata)
+                                        task_with_data.append({"task": dizionario["node_name"], "data": dizionario2["node_name"]})
+
+
+
+    print(task_with_data, "lista2")
+
+    # print(request.POST.items, "sto qua")
+    print(lista2)
+    list_data = Asset.objects.filter(process=Process.objects.get(pk=processId), asset_type=asset_type).exclude(name="")
+    list_task = Asset.objects.filter(process=Process.objects.get(pk=processId)).exclude(asset_type=8)
+    print(list_task)
     return render(request, 'process_dataobject_enrichment.html',
-                  {"systemId": systemId, "processId": processId})
-
+                  {"systemId": systemId, "processId": processId, "list_data": list_data,"list_task":list_task,"task_with_data":task_with_data})

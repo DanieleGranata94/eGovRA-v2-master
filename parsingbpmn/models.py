@@ -119,6 +119,14 @@ class Asset_has_attribute(models.Model):
     asset = models.ForeignKey(Asset,on_delete=models.CASCADE)
     attribute = models.ForeignKey(Attribute,on_delete=models.CASCADE)
 
+
+class DataObject(models.Model):
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, null=True)
+    id_dataobj =models.CharField(max_length=100)
+    id_dataobj_ref = models.CharField(max_length=100)
+
+
+
 class Threat_has_attribute(models.Model):
     threat = models.ForeignKey(Threat,on_delete=models.CASCADE)
     attribute = models.ForeignKey(Attribute,on_delete=models.CASCADE)

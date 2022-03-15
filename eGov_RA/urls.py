@@ -22,7 +22,7 @@ from parsingbpmn import views
 from parsingbpmn.views import bpmn_process_management, system_management, \
     delete_process, delete_system, process_enrichment, threat_modeling, process_view_task_type, process_view_attribute, \
     task_type_enrichment, export_threat_modeling, threats_and_controls, bpmn_viewer, edit_process, threat_modeling_view, \
-    risk_analysis_result
+    risk_analysis_result, delete_Dataobj
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,6 +32,7 @@ urlpatterns = [
     path('process_view_attribute/<int:systemId>/<int:processId>', process_view_attribute, name='process_view_attribute'),
     path('edit_process/<int:systemId>/<int:processId>', edit_process, name='edit_process'),
     path('delete_process/<int:systemId>/<int:processId>', delete_process, name='delete_process'),
+    path('delete_Dataobj/<int:systemId>/<int:processId>/<int:assetId>', delete_Dataobj, name='delete_Dataobj'),
     path('delete_system/<int:systemId>', delete_system, name='delete_system'),
     path('process_enrichment/<int:systemId>/<int:processId>', process_enrichment, name='process_enrichment'),
     path('risk_analysis_result/<int:systemId>/<int:processId>', risk_analysis_result, name='risk_analysis_result'),
@@ -48,6 +49,9 @@ urlpatterns = [
     path('risk_analysis/<int:systemId>/<int:processId>/<int:assetId>', views.risk_analysis, name='risk_analysis'),
     path('process_data_object_input/<int:systemId>/<int:processId>', views.process_data_object_input, name='process_data_object_input'),
     path('save_dataobject/<int:systemId>/<int:processId>', views.save_dataobject, name='save_dataobject'),
+
+
+
 
 ]
 

@@ -228,15 +228,10 @@ class BpmnDiagramGraphImport(object):
                                                          element)
         elif tag_name == consts.Consts.dataObject:
             BpmnDiagramGraphImport.import_data_object_to_graph(diagram_graph, process_id, process_attributes,
-                                                         element)
+                                                               element)
         elif tag_name == consts.Consts.dataOutputAssociation:
             BpmnDiagramGraphImport.import_dataOutputAssociation(diagram_graph, process_id, process_attributes,
-                                                           element)
-
-
-
-
-
+                                                                element)
 
     @staticmethod
     def import_lane_set_element(process_attributes, lane_set_element, plane_element):
@@ -373,8 +368,11 @@ class BpmnDiagramGraphImport(object):
         :param flow_node_element: object representing a BPMN XML element corresponding to given flownode,
         """
         element_id = flow_node_element.getAttribute(consts.Consts.id)
+        # dataOutput = flow_node_element.getAttribute(consts.Consts.dataOutputAssociation)
         bpmn_graph.add_node(element_id)
+        # bpmn_graph.add_node(dataOutput)
         bpmn_graph.nodes[element_id][consts.Consts.id] = element_id
+        # bpmn_graph.nodes[dataOutput][consts.Consts.dataOutputAssociation] = dataOutput
         bpmn_graph.nodes[element_id][consts.Consts.type] = \
             utils.BpmnImportUtils.remove_namespace_from_tag_name(flow_node_element.tagName)
         bpmn_graph.nodes[element_id][consts.Consts.node_name] = \
@@ -383,7 +381,52 @@ class BpmnDiagramGraphImport(object):
                 else ""
         bpmn_graph.nodes[element_id][consts.Consts.process] = process_id
         process_attributes[consts.Consts.node_ids].append(element_id)
+        # add dataoutput
+        data_output = ""
+        data_child = {}
+        text = ""
+        for tmp_element in utils.BpmnImportUtils.iterate_elements(flow_node_element):
+            if tmp_element.nodeType != tmp_element.TEXT_NODE:
+                tag_name = utils.BpmnImportUtils.remove_namespace_from_tag_name(tmp_element.tagName)
+                # print(tag_name)
+                if tag_name == consts.Consts.dataOutputAssociation:
+                    #data_child = []
+                    for child in tmp_element.childNodes:
+                        # print(child)
 
+                        if type(child) is Element:
+                            target_ref = list(tmp_element.attributes.values())[0].nodeValue
+                            text = child.firstChild.nodeValue
+                            # print(text,target_ref)
+                            data_output=(target_ref)
+                            data_child={consts.Consts.target_ref:text}
+                            # data_output.append(target_ref)
+                            # data_output = {consts.Consts.dataOutputAssociation: target_ref}
+                            # data_child ={consts.Consts.target_ref: target_ref}
+                            # data_child = {consts.Consts.id: text}
+                            # data_output = {consts.Consts.dataOutputAssociation: target_ref,
+                            # consts.Consts.target_ref: data_child}
+                            print(data_output)
+
+                            # data_output[consts.Consts.dataOutputAssociation] = (target_ref)
+                            # data_output[consts.Consts.dataOutputAssociation][consts.Consts.target_ref]=(data_child)
+
+                            print(data_child)
+
+                    print(data_output)
+                    # data_output[consts.Consts.dataOutputAssociation]=(text)
+
+                """
+                dataoutput_value = tmp_element.parentNode
+                #print(incoming_value)
+                data_output.append(dataoutput_value)
+                """
+        #print(bpmn_graph.nodes[element_id][consts.Consts.dataOutputAssociation])
+
+        bpmn_graph.nodes[element_id][consts.Consts.dataOutputAssociation]=(data_output)
+        #bpmn_graph.nodes[element_id][consts.Consts.dataOutputAssociation][consts.Consts.target_ref]=(data_child)
+
+        bpmn_graph.nodes[element_id][consts.Consts.target_ref] = (data_child)
         # add incoming flow node list
         incoming_list = []
         for tmp_element in utils.BpmnImportUtils.iterate_elements(flow_node_element):
@@ -392,6 +435,8 @@ class BpmnDiagramGraphImport(object):
                 if tag_name == consts.Consts.incoming_flow:
                     incoming_value = tmp_element.firstChild.nodeValue
                     incoming_list.append(incoming_value)
+
+        # print(incoming_list)
         bpmn_graph.nodes[element_id][consts.Consts.incoming_flow] = incoming_list
 
         # add outgoing flow node list
@@ -405,7 +450,6 @@ class BpmnDiagramGraphImport(object):
                     outgoing_list.append(outgoing_value)
 
         bpmn_graph.nodes[element_id][consts.Consts.outgoing_flow] = outgoing_list
-
 
     @staticmethod
     def import_task_to_graph(diagram_graph, process_id, process_attributes, task_element):
@@ -494,6 +538,7 @@ class BpmnDiagramGraphImport(object):
         BpmnDiagramGraphImport.import_flow_node_to_graph(diagram_graph, process_id, process_attributes, element)
 
         element_id = element.getAttribute(consts.Consts.id)
+
         diagram_graph.nodes[element_id][consts.Consts.default] = element.getAttribute(consts.Consts.default) \
             if element.hasAttribute(consts.Consts.default) else None
 
@@ -793,7 +838,7 @@ class BpmnDiagramGraphImport(object):
 
     @classmethod
     def import_association(cls, diagram_graph, process_id, process_attributes, element):
-        assoc=[]
+        assoc = []
         if type(element) is Element:
             element_id = element.getAttribute(consts.Consts.id)
             diagram_graph.add_node(element_id)
@@ -809,21 +854,20 @@ class BpmnDiagramGraphImport(object):
             assoc.append(targetRef)
             diagram_graph.nodes[element_id][consts.Consts.association] = assoc
 
-
-
     @classmethod
     def import_textAnnotation(cls, diagram_graph, process_id, process_attributes, element):
-        textAnnotations=[]
+        textAnnotations = []
         element_id = element.getAttribute(consts.Consts.id)
         diagram_graph.add_node(element_id)
         diagram_graph.nodes[element_id][consts.Consts.id] = element_id
-        diagram_graph.nodes[element_id][consts.Consts.type] = utils.BpmnImportUtils.remove_namespace_from_tag_name(element.tagName)
+        diagram_graph.nodes[element_id][consts.Consts.type] = utils.BpmnImportUtils.remove_namespace_from_tag_name(
+            element.tagName)
         diagram_graph.nodes[element_id][consts.Consts.process] = process_id
-        textAnn=[]
+        textAnn = []
         for child in element.childNodes:
             if type(child) is Element:
                 target_ref = list(element.attributes.values())[0].value
-                text=child.firstChild.nodeValue
+                text = child.firstChild.nodeValue
                 textAnn.append(target_ref)
                 textAnn.append(text)
                 textAnnotations.append(textAnn)
@@ -831,27 +875,22 @@ class BpmnDiagramGraphImport(object):
 
     @classmethod
     def import_dataOutputAssociation(cls, diagram_graph, process_id, element):
-        dataOutputAssociation=[]
+        dataOutputAssociation = []
         element_id = element.getAttribute(consts.Consts.id)
         diagram_graph.add_node(element_id)
         diagram_graph.nodes[element_id][consts.Consts.id] = element_id
-        diagram_graph.nodes[element_id][consts.Consts.type] = utils.BpmnImportUtils.remove_namespace_from_tag_name(element.tagName)
+        diagram_graph.nodes[element_id][consts.Consts.type] = utils.BpmnImportUtils.remove_namespace_from_tag_name(
+            element.tagName)
         diagram_graph.nodes[element_id][consts.Consts.process] = process_id
-        textAnn=[]
+        textAnn = []
         for child in element.childNodes:
             if type(child) is Element:
                 target_ref = list(element.attributes.values())[0].value
-                text=child.firstChild.nodeValue
+                text = child.firstChild.nodeValue
                 textAnn.append(target_ref)
                 textAnn.append(text)
                 dataOutputAssociation.append(textAnn)
         diagram_graph.nodes[element_id][consts.Consts.textAnnotation] = dataOutputAssociation
-
-
-
-
-
-
 
     @staticmethod
     def import_message_flow_to_graph(diagram_graph, message_flows, flow_element):
